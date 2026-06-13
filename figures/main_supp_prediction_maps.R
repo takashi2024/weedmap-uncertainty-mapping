@@ -3,7 +3,7 @@ library(ggplot2)
 library(scales)
 library(patchwork)
 
-ROOT    <- "/Users/takashi/LocalAnalysis/WeedMap"
+ROOT    <- "/Users/takashi/LocalAnalysis/WeedMap/ForGithub"
 RESDIR  <- file.path(ROOT, "Results_TabICL")
 TARGET  <- "log1p_Chenopodium_Count"
 OUTDIR  <- file.path(RESDIR, "figures", "supp")

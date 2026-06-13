@@ -27,7 +27,7 @@ from tabicl import TabICLRegressor
 # =============================================================================
 # User settings
 # =============================================================================
-ROOT      = r"/Users/takashi/LocalAnalysis/WeedMap"
+ROOT      = r"/Users/takashi/LocalAnalysis/WeedMap/ForGithub"
 DATA_ROOT = os.path.join(ROOT, "Dataset_for_python")
 RESULTS   = os.path.join(ROOT, "Results_TabICL")
 UAV_ROOT  = os.path.join(ROOT, "data")
@@ -248,22 +248,22 @@ elif RUN_MODE == "nndm":
     os.makedirs(out_vanilla, exist_ok=True)
     os.makedirs(out_rk,      exist_ok=True)
 
-    # ---- Vanilla NNDM evaluation (tabfpn_nndm_folds) -------------------------
-    tabfpn_folds_path = os.path.join(nndm_data_dir, "tabfpn_nndm_folds.csv")
-    if not os.path.exists(tabfpn_folds_path):
+    # ---- Vanilla NNDM evaluation (tabicl_nndm_folds) -------------------------
+    tabicl_folds_path = os.path.join(nndm_data_dir, "tabicl_nndm_folds.csv")
+    if not os.path.exists(tabicl_folds_path):
         raise FileNotFoundError(
             f"Run main_NNDM_preprocessing.R (Stage 2) first.\n"
-            f"Missing: {tabfpn_folds_path}"
+            f"Missing: {tabicl_folds_path}"
         )
-    tabfpn_folds = pd.read_csv(tabfpn_folds_path)
+    tabicl_folds = pd.read_csv(tabicl_folds_path)
 
-    print(f"\n[Vanilla NNDM TabICL] using tabfpn_nndm_folds...")
+    print(f"\n[Vanilla NNDM TabICL] using tabicl_nndm_folds...")
     y_true_van  = np.empty(N, dtype=float)
     y_pred_van  = np.empty(N, dtype=float)
     yq_van      = []
 
     for fold_i in range(N):
-        fold_rows = tabfpn_folds[tabfpn_folds["fold"] == fold_i]
+        fold_rows = tabicl_folds[tabicl_folds["fold"] == fold_i]
         train_idx = fold_rows[fold_rows["role"] == "train"]["obs_idx"].to_numpy()
         test_idx  = int(fold_rows[fold_rows["role"] == "test"]["obs_idx"].iloc[0])
 

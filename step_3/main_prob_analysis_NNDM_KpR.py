@@ -21,7 +21,7 @@ from sklearn.metrics import r2_score, average_precision_score, roc_auc_score, br
 # =========================================================
 # Settings
 # =========================================================
-ROOT         = r"/Users/takashi/LocalAnalysis/WeedMap"
+ROOT         = r"/Users/takashi/LocalAnalysis/WeedMap/ForGithub"
 RESULTS_ROOT = os.path.join(ROOT, "Results_TabICL")
 OUT_DIR      = os.path.join(RESULTS_ROOT, "NNDM_prob")
 

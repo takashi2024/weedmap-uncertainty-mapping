@@ -25,7 +25,7 @@ from sklearn.metrics import r2_score, mean_squared_error
 # =============================================================================
 # User settings
 # =============================================================================
-ROOT   = r"/Users/takashi/LocalAnalysis/WeedMap"
+ROOT   = r"/Users/takashi/LocalAnalysis/WeedMap/ForGithub"
 date   = "20250602"
 target = "log1p_Chenopodium_Count"
 PLOT   = True    # set False to skip the scatter plot

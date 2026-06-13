@@ -22,7 +22,7 @@ import matplotlib.lines as mlines
 # =============================================================================
 # Settings
 # =============================================================================
-ROOT     = r"/Users/takashi/LocalAnalysis/WeedMap"
+ROOT     = r"/Users/takashi/LocalAnalysis/WeedMap/ForGithub"
 PROB_DIR = os.path.join(ROOT, "Results_TabICL", "NNDM_prob")
 TARGET   = "log1p_Chenopodium_Count"
 T        = 10

@@ -2,7 +2,7 @@ library(dplyr)
 library(tidyr)
 library(ggplot2)
 
-ROOT    <- "/Users/takashi/LocalAnalysis/WeedMap"
+ROOT    <- "/Users/takashi/LocalAnalysis/WeedMap/ForGithub"
 RESDIR  <- file.path(ROOT, "Results_TabICL")
 TARGET  <- "log1p_Chenopodium_Count"
 OUTDIR  <- file.path(RESDIR, "figures", "supp")

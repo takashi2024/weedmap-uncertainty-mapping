@@ -5,7 +5,7 @@ library(ggplot2)
 # ---------------------------
 # Settings
 # ---------------------------
-ROOT <- file.path("/Users/takashi/LocalAnalysis/WeedMap", "Results_TabICL")
+ROOT <- file.path("/Users/takashi/LocalAnalysis/WeedMap/ForGithub", "Results_TabICL")
 
 dates <- c(
   "data_20250414","data_20250424","data_20250430","data_20250506",

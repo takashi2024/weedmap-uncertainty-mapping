@@ -28,7 +28,7 @@ plt.rcParams.update({
 # =============================================================================
 # Settings
 # =============================================================================
-ROOT         = r"/Users/takashi/LocalAnalysis/WeedMap"
+ROOT         = r"/Users/takashi/LocalAnalysis/WeedMap/ForGithub"
 RESULTS_ROOT = os.path.join(ROOT, "Results_TabICL")
 DATE_MIN     = "20250414"
 DATE_MAX     = "20250602"

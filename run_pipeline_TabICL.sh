@@ -13,7 +13,7 @@
 
 set -euo pipefail
 
-ROOT="/Users/takashi/LocalAnalysis/WeedMap"   # <-- set to your local path
+ROOT="/Users/takashi/LocalAnalysis/WeedMap/ForGithub"   # <-- set to your local path
 CONDA_ENV="tabpfn"
 
 PREPROCESS_R="$ROOT/step_1/main_NNDM_preprocessing.R"

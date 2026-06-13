@@ -7,7 +7,7 @@
 library(tidyverse)
 library(sf)
 
-ROOT     <- "/Users/takashi/LocalAnalysis/WeedMap"
+ROOT     <- "/Users/takashi/LocalAnalysis/WeedMap/ForGithub"
 UAV_ROOT <- file.path(ROOT, "data")
 out_dir  <- file.path(ROOT, "Results_TabICL", "figures")
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)

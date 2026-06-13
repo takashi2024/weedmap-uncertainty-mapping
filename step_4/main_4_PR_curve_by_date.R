@@ -2,7 +2,7 @@ library(dplyr)
 library(ggplot2)
 library(patchwork)
 
-ROOT     <- "/Users/takashi/LocalAnalysis/WeedMap"
+ROOT     <- "/Users/takashi/LocalAnalysis/WeedMap/ForGithub"
 PROB_DIR <- file.path(ROOT, "Results_TabICL", "NNDM_prob")
 OUTDIR   <- file.path(ROOT, "Results_TabICL", "figures")
 TARGET   <- "log1p_Chenopodium_Count"

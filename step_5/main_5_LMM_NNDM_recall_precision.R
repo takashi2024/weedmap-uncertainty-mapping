@@ -12,7 +12,7 @@ library(emmeans)
 # ------------------------------------------------------------
 # 1. Paths
 # ------------------------------------------------------------
-ROOT <- "/Users/takashi/LocalAnalysis/WeedMap"
+ROOT <- "/Users/takashi/LocalAnalysis/WeedMap/ForGithub"
 
 file_prevGT0 <- file.path(ROOT, "Results_TabICL/NNDM_prob",
   "NNDM_Chenopodium_T10_budget_metrics_for_R_LMM_tauGE1_prevGT0.csv")
@@ -25,8 +25,8 @@ dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 # ------------------------------------------------------------
 budgets <- c(0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 0.95)
 
-alg_levels  <- c("TabICL-KpR_NNDM", "TabICL-RK_NNDM", "TabICL_NNDM", "OK_NNDM")
-alg_labels  <- c("TabICL-KpR",     "TabICL-RK",     "TabICL",     "OK")
+alg_levels  <- c("KpR_NNDM", "RK_NNDM", "Vanilla_TabPFN_NNDM", "OK_NNDM")
+alg_labels  <- c("TabICL-KpR", "TabICL-RK", "TabICL", "OK")
 rule_levels <- c("DET", "PROB")
 
 ALG_COLORS <- c(

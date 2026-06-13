@@ -29,7 +29,7 @@ crs_epsg <- 25832
 # Option B: fit once on pooled residuals, reuse (fast)
 FIT_VARIOGRAM_PER_FOLD <- FALSE   # TRUE = Option A,  FALSE = Option B
 
-ROOT     <- "/Users/takashi/LocalAnalysis/WeedMap"
+ROOT     <- "/Users/takashi/LocalAnalysis/WeedMap/ForGithub"
 base_dir <- file.path(ROOT, "Results_TabICL", paste0("data_", date), "NNDM", "RK")
 qs       <- c(0.001, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.999)
 

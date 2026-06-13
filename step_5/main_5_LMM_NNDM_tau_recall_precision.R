@@ -13,7 +13,7 @@ library(emmeans)
 # ------------------------------------------------------------
 # 1. Paths
 # ------------------------------------------------------------
-ROOT    <- "/Users/takashi/LocalAnalysis/WeedMap"
+ROOT    <- "/Users/takashi/LocalAnalysis/WeedMap/ForGithub"
 PROB_DIR <- file.path(ROOT, "Results_TabICL", "NNDM_prob")
 out_dir  <- file.path(ROOT, "Results_TabICL", "NNDM_LMM_outputs")
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)

@@ -18,7 +18,7 @@ import matplotlib.lines as mlines
 # =========================
 # Settings
 # =========================
-ROOT = r"/Users/takashi/LocalAnalysis/WeedMap/Results_TabICL/NNDM_prob"
+ROOT = r"/Users/takashi/LocalAnalysis/WeedMap/ForGithub/Results_TabICL/NNDM_prob"
 
 TARGET = "log1p_Chenopodium_Count"
 T      = 10

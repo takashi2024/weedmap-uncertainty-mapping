@@ -15,7 +15,7 @@ plt.rcParams.update({
 # =========================
 # Settings
 # =========================
-ROOT         = r"/Users/takashi/LocalAnalysis/WeedMap"
+ROOT         = r"/Users/takashi/LocalAnalysis/WeedMap/ForGithub"
 RESULTS_ROOT = os.path.join(ROOT, "Results_TabICL")
 
 METRIC   = "R2_log"   # NNDM LOO R² in log-scale (stored as "R2" in source files)

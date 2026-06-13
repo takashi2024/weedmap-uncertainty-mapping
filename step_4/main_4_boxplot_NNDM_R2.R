@@ -1,7 +1,7 @@
 library(ggplot2)
 library(dplyr)
 
-ROOT    <- "/Users/takashi/LocalAnalysis/WeedMap"
+ROOT    <- "/Users/takashi/LocalAnalysis/WeedMap/ForGithub"
 out_dir <- file.path(ROOT, "Results_TabICL", "figures")
 dir.create(out_dir, showWarnings = FALSE)
 

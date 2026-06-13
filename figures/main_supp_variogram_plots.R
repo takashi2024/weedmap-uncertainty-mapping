@@ -5,7 +5,7 @@ library(gstat)
 library(ggplot2)
 library(patchwork)
 
-ROOT     <- "/Users/takashi/LocalAnalysis/WeedMap"
+ROOT     <- "/Users/takashi/LocalAnalysis/WeedMap/ForGithub"
 RESDIR   <- file.path(ROOT, "Results_TabICL")
 TARGET   <- "log1p_Chenopodium_Count"
 UAV_ROOT <- file.path(ROOT, "data")

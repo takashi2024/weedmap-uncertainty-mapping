@@ -25,7 +25,7 @@ from tabicl import TabICLRegressor
 # =============================================================================
 # User settings
 # =============================================================================
-ROOT      = r"/Users/takashi/LocalAnalysis/WeedMap"
+ROOT      = r"/Users/takashi/LocalAnalysis/WeedMap/ForGithub"
 DATA_ROOT = os.path.join(ROOT, "Dataset_for_python")
 RESULTS   = os.path.join(ROOT, "Results_TabICL")
 UAV_ROOT  = os.path.join(ROOT, "data")
