@@ -40,6 +40,20 @@ make_sp <- function(date_str) {
   df
 }
 
+# Robust variogram fitting: exclude Gaussian (near-singular kriging matrix at
+# zero nugget) and floor nugget at 5% of total sill to prevent zero-nugget fits.
+fit_vgm_robust <- function(formula, data, min_nugget_frac = 0.05, ...) {
+  fit        <- autofitVariogram(formula, data, model = c("Sph", "Exp", "Ste"), ...)
+  total_sill <- sum(fit$var_model$psill)
+  min_nug    <- min_nugget_frac * total_sill
+  if (fit$var_model$psill[1] < min_nug) {
+    deficit <- min_nug - fit$var_model$psill[1]
+    fit$var_model$psill[1] <- min_nug
+    fit$var_model$psill[2] <- max(fit$var_model$psill[2] - deficit, 0)
+  }
+  fit
+}
+
 VGM_NAMES <- c(Sph = "Spherical", Exp = "Exponential", Gau = "Gaussian",
                Ste = "Matérn", Mat = "Matérn", Cir = "Circular",
                Lin = "Linear", Bes = "Bessel", Pen = "Pentaspherical")
@@ -100,10 +114,11 @@ for (date in DATES) {
 
   # OK global variogram
   ok_vgm <- tryCatch({
-    fit <- autofitVariogram(log1p_Count ~ 1, pts_sp)
+    fit <- fit_vgm_robust(log1p_Count ~ 1, pts_sp)
     emp <- variogram(log1p_Count ~ 1, pts_sp)
     vgm_panel(emp, fit$var_model,
               paste0(label, "\n", vgm_label(fit$var_model$model[2]),
+                     "  nugget=", round(fit$var_model$psill[1], 3),
                      "  range=", practical_range(fit$var_model), "m"))
   }, error = function(e) { warning("OK vgm failed: ", date); NULL })
 
@@ -132,10 +147,11 @@ for (date in DATES) {
     sp::coordinates(resid_sp) <- ~x_25832 + y_25832
     sp::proj4string(resid_sp) <- sp::CRS("+init=epsg:25832")
 
-    fit_rk  <- autofitVariogram(resid ~ 1, resid_sp)
+    fit_rk  <- fit_vgm_robust(resid ~ 1, resid_sp)
     emp_rk  <- variogram(resid ~ 1, resid_sp)
     vgm_panel(emp_rk, fit_rk$var_model,
               paste0(label, "\n", vgm_label(fit_rk$var_model$model[2]),
+                     "  nugget=", round(fit_rk$var_model$psill[1], 3),
                      "  range=", practical_range(fit_rk$var_model), "m"))
   }, error = function(e) { warning("RK vgm failed: ", date, " — ", e$message); NULL })
 

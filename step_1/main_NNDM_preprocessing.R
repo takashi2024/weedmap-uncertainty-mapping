@@ -86,6 +86,20 @@ pts_sf     <- st_as_sf(result, coords = c("x_25832", "y_25832"), crs = crs_epsg)
 pts_sp     <- as(pts_sf, "Spatial")
 fml_target <- as.formula(paste(target, "~ 1"))
 
+# Robust variogram fitting: exclude Gaussian (near-singular kriging matrix at
+# zero nugget) and floor nugget at 5% of total sill to prevent zero-nugget fits.
+fit_vgm_robust <- function(formula, data, min_nugget_frac = 0.05, ...) {
+  fit        <- autofitVariogram(formula, data, model = c("Sph", "Exp", "Ste"), ...)
+  total_sill <- sum(fit$var_model$psill)
+  min_nug    <- min_nugget_frac * total_sill
+  if (fit$var_model$psill[1] < min_nug) {
+    deficit <- min_nug - fit$var_model$psill[1]
+    fit$var_model$psill[1] <- min_nug
+    fit$var_model$psill[2] <- max(fit$var_model$psill[2] - deficit, 0)
+  }
+  fit
+}
+
 # ---- Output directories ------------------------------------------------------
 nndm_data_dir <- file.path(ROOT, "Dataset_for_python", paste0("data_", path_date), "NNDM")
 nndm_res_dir  <- file.path(ROOT, "Results_TabICL",      paste0("data_", path_date), "NNDM")
@@ -106,10 +120,11 @@ kpr_loo_path    <- file.path(nndm_data_dir, "kpr_tabicl_loo_residuals.csv")
 message("\n=== STAGE 1: LOO kriging for phi estimation ===")
 
 message("Fitting global variogram on full dataset...")
-global_vgm_fit <- autofitVariogram(fml_target, pts_sp)
+global_vgm_fit <- fit_vgm_robust(fml_target, pts_sp)
 global_vgm     <- global_vgm_fit$var_model
-message(sprintf("  Global variogram: %s  sill=%.4f  range=%.2f m",
-                global_vgm$model[2], global_vgm$psill[2], global_vgm$range[2]))
+message(sprintf("  Global variogram: %s  nugget=%.4f  sill=%.4f  range=%.2f m",
+                global_vgm$model[2], global_vgm$psill[1],
+                global_vgm$psill[2], global_vgm$range[2]))
 
 # Helper: extract Lagrange multiplier psi from the OK system
 # Solves [Gamma 1; 1^T 0] [lambda; psi] = [gamma0; 1] and returns psi.
@@ -237,8 +252,15 @@ phi_and_nndm <- function(resid_df, resid_col, model_label, fold_csv_path) {
   resid_sf <- st_as_sf(resid_df, coords = c("x_25832", "y_25832"), crs = crs_epsg)
   resid_sp <- as(resid_sf, "Spatial")
   fml_r    <- as.formula(paste(resid_col, "~ 1"))
-  empvar   <- variogram(fml_r, data = resid_sp)
-  fitvar   <- fit.variogram(empvar, vgm(model = "Sph", nugget = TRUE))
+  empvar     <- variogram(fml_r, data = resid_sp)
+  fitvar     <- fit.variogram(empvar, vgm(model = "Sph", nugget = 0))
+  total_sill_r <- sum(fitvar$psill)
+  min_nug_r    <- 0.05 * total_sill_r
+  if (fitvar$psill[1] < min_nug_r) {
+    deficit <- min_nug_r - fitvar$psill[1]
+    fitvar$psill[1] <- min_nug_r
+    fitvar$psill[2] <- max(fitvar$psill[2] - deficit, 0)
+  }
   phi_val  <- fitvar$range[2]
   message(sprintf("  %s: phi = %.2f m", model_label, phi_val))
 
