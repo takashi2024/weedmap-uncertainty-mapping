@@ -237,4 +237,46 @@ ggsave(file.path(OUTDIR, "unc_maps_dates5to8.tiff"),
        plot = p_unc_late, width = 13, height = 9, dpi = 300, device = "tiff")
 cat("Saved unc_maps_dates5to8\n")
 
+make_unc_plot_single <- function(data) {
+  ggplot(data, aes(x = x, y = y, colour = iqr)) +
+    geom_point(size = 1.3, shape = 16) +
+    facet_wrap(~ method, nrow = 1) +
+    scale_colour_viridis_c(
+      name   = "80% PI width\n(log scale)",
+      option = "viridis",
+      limits = c(0, unc_limit),
+      oob    = scales::squish
+    ) +
+    coord_fixed() +
+    labs(x = "Easting (m)", y = "Northing (m)") +
+    theme_bw(base_size = 18) +
+    theme(
+      strip.background = element_blank(),
+      strip.text.x     = element_text(size = 22, face = "bold"),
+      legend.position  = "right",
+      legend.title     = element_text(size = 16),
+      legend.text      = element_text(size = 14),
+      panel.grid       = element_blank(),
+      axis.text        = element_text(size = 14),
+      axis.title       = element_text(size = 18),
+      panel.spacing    = unit(0.5, "lines"),
+      plot.margin      = unit(c(2, 2, 2, 2), "mm")
+    )
+}
+
+for (date in DATES) {
+  label <- DATE_LABELS[date]
+  d_data <- unc_combined %>%
+    filter(date_label == label) %>%
+    mutate(method = factor(method, levels = METHOD_ORDER[-1]))
+  if (nrow(d_data) == 0) next
+  p <- make_unc_plot_single(d_data)
+  fname <- paste0("unc_map_", date)
+  ggsave(file.path(OUTDIR, paste0(fname, ".png")),
+         plot = p, width = 13, height = 4, dpi = 150)
+  ggsave(file.path(OUTDIR, paste0(fname, ".tiff")),
+         plot = p, width = 13, height = 4, dpi = 300, device = "tiff")
+  cat("Saved", fname, "\n")
+}
+
 cat("Done. Output in", OUTDIR, "\n")

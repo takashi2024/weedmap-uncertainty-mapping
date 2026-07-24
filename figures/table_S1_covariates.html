@@ -1,0 +1,358 @@
+<title>Table S1 — UAV-derived covariates</title>
+<style>
+  :root {
+    --bg:          #F6F8F6;
+    --surface:     #FFFFFF;
+    --border:      #C8D9CC;
+    --border-light:#E0EBE3;
+    --text:        #1A2420;
+    --text-2:      #4A6358;
+    --accent:      #2B5240;
+    --accent-mid:  #3D7059;
+    --accent-pale: #E4EEE7;
+    --stripe:      #F0F5F1;
+    --mono-bg:     #E8F0EB;
+    --cat-bg:      #D6E7DC;
+    --cat-text:    #1C3D2C;
+    --src-bg:      #EDF4EF;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:          #0C1510;
+      --surface:     #111E16;
+      --border:      #243D2E;
+      --border-light:#1C2E24;
+      --text:        #D8E8DC;
+      --text-2:      #7AAD8E;
+      --accent:      #4DB87A;
+      --accent-mid:  #3A9060;
+      --accent-pale: #0F2018;
+      --stripe:      #131E16;
+      --mono-bg:     #182A1E;
+      --cat-bg:      #162A1E;
+      --cat-text:    #7AD49A;
+      --src-bg:      #101C14;
+    }
+  }
+  :root[data-theme="light"] {
+    --bg:          #F6F8F6;
+    --surface:     #FFFFFF;
+    --border:      #C8D9CC;
+    --border-light:#E0EBE3;
+    --text:        #1A2420;
+    --text-2:      #4A6358;
+    --accent:      #2B5240;
+    --accent-mid:  #3D7059;
+    --accent-pale: #E4EEE7;
+    --stripe:      #F0F5F1;
+    --mono-bg:     #E8F0EB;
+    --cat-bg:      #D6E7DC;
+    --cat-text:    #1C3D2C;
+    --src-bg:      #EDF4EF;
+  }
+  :root[data-theme="dark"] {
+    --bg:          #0C1510;
+    --surface:     #111E16;
+    --border:      #243D2E;
+    --border-light:#1C2E24;
+    --text:        #D8E8DC;
+    --text-2:      #7AAD8E;
+    --accent:      #4DB87A;
+    --accent-mid:  #3A9060;
+    --accent-pale: #0F2018;
+    --stripe:      #131E16;
+    --mono-bg:     #182A1E;
+    --cat-bg:      #162A1E;
+    --cat-text:    #7AD49A;
+    --src-bg:      #101C14;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    padding: 2.5rem 1.5rem 4rem;
+  }
+
+  .page {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  /* ── Header ── */
+  header {
+    border-left: 4px solid var(--accent);
+    padding-left: 1rem;
+    margin-bottom: 2rem;
+  }
+  .table-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent-mid);
+    margin-bottom: 0.35rem;
+  }
+  h1 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.25rem;
+    font-weight: normal;
+    color: var(--text);
+    line-height: 1.35;
+    text-wrap: balance;
+    margin-bottom: 0.6rem;
+  }
+  .caption {
+    font-size: 12.5px;
+    color: var(--text-2);
+    max-width: 72ch;
+    line-height: 1.6;
+  }
+
+  /* ── Formula block ── */
+  .formula-block {
+    background: var(--accent-pale);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.9rem 1.1rem;
+    margin-bottom: 1.5rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.3rem 2rem;
+  }
+  .formula-block h2 {
+    grid-column: 1 / -1;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent-mid);
+    margin-bottom: 0.4rem;
+  }
+  .formula-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: baseline;
+    font-size: 12.5px;
+  }
+  .formula-name {
+    font-family: "Courier New", Courier, monospace;
+    font-weight: 600;
+    color: var(--text);
+    min-width: 6rem;
+    flex-shrink: 0;
+  }
+  .formula-eq {
+    color: var(--text-2);
+  }
+
+  /* ── Table wrapper ── */
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: var(--surface);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Sticky header */
+  thead th {
+    position: sticky;
+    top: 0;
+    background: var(--accent);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    padding: 0.65rem 0.75rem;
+    text-align: left;
+    white-space: nowrap;
+    border-bottom: 2px solid var(--accent-mid);
+  }
+  thead th:first-child { border-radius: 4px 0 0 0; }
+  thead th:last-child  { border-radius: 0 4px 0 0; }
+
+  /* Category separator rows */
+  tr.cat-row td {
+    background: var(--cat-bg);
+    color: var(--cat-text);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    padding: 0.4rem 0.75rem;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  /* Source sub-header rows */
+  tr.src-row td {
+    background: var(--src-bg);
+    color: var(--text-2);
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 0.35rem 0.75rem 0.35rem 1.5rem;
+    border-top: 1px solid var(--border-light);
+  }
+
+  /* Data rows */
+  tbody tr.data-row td {
+    padding: 0.42rem 0.75rem;
+    border-top: 1px solid var(--border-light);
+    vertical-align: middle;
+    font-size: 13px;
+  }
+  tbody tr.data-row:nth-child(even) td {
+    background: var(--stripe);
+  }
+
+  .n-col  { color: var(--text-2); font-size: 12px; text-align: right; padding-right: 1rem !important; }
+  .code   { font-family: "Courier New", Courier, monospace; font-size: 12px; background: var(--mono-bg); padding: 1px 5px; border-radius: 3px; white-space: nowrap; }
+  .stat   { color: var(--text); }
+  .type-spec  { color: var(--accent-mid); font-size: 12px; }
+  .type-tex   { color: var(--text-2); font-size: 12px; }
+  .desc   { color: var(--text-2); font-size: 12.5px; max-width: 26ch; }
+
+  /* ── Footer note ── */
+  .footnote {
+    margin-top: 1rem;
+    font-size: 11.5px;
+    color: var(--text-2);
+    line-height: 1.65;
+    max-width: 80ch;
+    padding-left: 0.1rem;
+  }
+  .footnote strong { color: var(--text); font-weight: 600; }
+</style>
+
+<div class="page">
+
+  <header>
+    <p class="table-label">Table S1</p>
+    <h1>UAV-derived covariates used in TabICL-based weed density models</h1>
+    <p class="caption">
+      All 40 covariates were extracted per region of interest (ROI, 1 m × 1 m) from
+      multispectral UAV orthomosaics acquired on each survey date. Feature names
+      correspond to column headers in <code style="font-size:11.5px">ROI_features_stacked.csv</code>.
+    </p>
+  </header>
+
+  <div class="formula-block">
+    <h2>Vegetation index definitions (Index DataBase)</h2>
+    <div class="formula-row"><span class="formula-name">NDVI</span><span class="formula-eq">(NIR − Red) / (NIR + Red)</span></div>
+    <div class="formula-row"><span class="formula-name">NDRE</span><span class="formula-eq">(NIR − Red-edge) / (NIR + Red-edge)</span></div>
+    <div class="formula-row"><span class="formula-name">CI<sub>green</sub></span><span class="formula-eq">(NIR / Green) − 1</span></div>
+    <div class="formula-row"><span class="formula-name">CI<sub>red-edge</sub></span><span class="formula-eq">(NIR / Red-edge) − 1</span></div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th class="n-col">#</th>
+          <th>CSV column name</th>
+          <th>Source</th>
+          <th>Statistic</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <!-- ═══ REFLECTANCE BANDS ═══ -->
+        <tr class="cat-row"><td colspan="6">Reflectance bands</td></tr>
+
+        <!-- Green -->
+        <tr class="src-row"><td colspan="6">Green — 560 nm</td></tr>
+        <tr class="data-row"><td class="n-col">1</td><td><span class="code">green_mean</span></td><td>Green</td><td class="stat">Mean</td><td class="type-spec">Spectral</td><td class="desc">ROI mean reflectance</td></tr>
+        <tr class="data-row"><td class="n-col">2</td><td><span class="code">green_std</span></td><td>Green</td><td class="stat">SD</td><td class="type-spec">Spectral</td><td class="desc">ROI standard deviation</td></tr>
+        <tr class="data-row"><td class="n-col">3</td><td><span class="code">green_contrast</span></td><td>Green</td><td class="stat">Contrast</td><td class="type-tex">GLCM texture</td><td class="desc">Local intensity variation</td></tr>
+        <tr class="data-row"><td class="n-col">4</td><td><span class="code">green_entropy</span></td><td>Green</td><td class="stat">Entropy</td><td class="type-tex">GLCM texture</td><td class="desc">Disorder of gray-level distribution</td></tr>
+        <tr class="data-row"><td class="n-col">5</td><td><span class="code">green_homogeneity</span></td><td>Green</td><td class="stat">Homogeneity</td><td class="type-tex">GLCM texture</td><td class="desc">Closeness of distribution to diagonal</td></tr>
+
+        <!-- Red -->
+        <tr class="src-row"><td colspan="6">Red — 650 nm</td></tr>
+        <tr class="data-row"><td class="n-col">6</td><td><span class="code">red_mean</span></td><td>Red</td><td class="stat">Mean</td><td class="type-spec">Spectral</td><td class="desc">ROI mean reflectance</td></tr>
+        <tr class="data-row"><td class="n-col">7</td><td><span class="code">red_std</span></td><td>Red</td><td class="stat">SD</td><td class="type-spec">Spectral</td><td class="desc">ROI standard deviation</td></tr>
+        <tr class="data-row"><td class="n-col">8</td><td><span class="code">red_contrast</span></td><td>Red</td><td class="stat">Contrast</td><td class="type-tex">GLCM texture</td><td class="desc">Local intensity variation</td></tr>
+        <tr class="data-row"><td class="n-col">9</td><td><span class="code">red_entropy</span></td><td>Red</td><td class="stat">Entropy</td><td class="type-tex">GLCM texture</td><td class="desc">Disorder of gray-level distribution</td></tr>
+        <tr class="data-row"><td class="n-col">10</td><td><span class="code">red_homogeneity</span></td><td>Red</td><td class="stat">Homogeneity</td><td class="type-tex">GLCM texture</td><td class="desc">Closeness of distribution to diagonal</td></tr>
+
+        <!-- Red-edge -->
+        <tr class="src-row"><td colspan="6">Red-edge — 730 nm</td></tr>
+        <tr class="data-row"><td class="n-col">11</td><td><span class="code">red_edge_mean</span></td><td>Red-edge</td><td class="stat">Mean</td><td class="type-spec">Spectral</td><td class="desc">ROI mean reflectance</td></tr>
+        <tr class="data-row"><td class="n-col">12</td><td><span class="code">red_edge_std</span></td><td>Red-edge</td><td class="stat">SD</td><td class="type-spec">Spectral</td><td class="desc">ROI standard deviation</td></tr>
+        <tr class="data-row"><td class="n-col">13</td><td><span class="code">red_edge_contrast</span></td><td>Red-edge</td><td class="stat">Contrast</td><td class="type-tex">GLCM texture</td><td class="desc">Local intensity variation</td></tr>
+        <tr class="data-row"><td class="n-col">14</td><td><span class="code">red_edge_entropy</span></td><td>Red-edge</td><td class="stat">Entropy</td><td class="type-tex">GLCM texture</td><td class="desc">Disorder of gray-level distribution</td></tr>
+        <tr class="data-row"><td class="n-col">15</td><td><span class="code">red_edge_homogeneity</span></td><td>Red-edge</td><td class="stat">Homogeneity</td><td class="type-tex">GLCM texture</td><td class="desc">Closeness of distribution to diagonal</td></tr>
+
+        <!-- NIR -->
+        <tr class="src-row"><td colspan="6">Near-infrared — 840 nm</td></tr>
+        <tr class="data-row"><td class="n-col">16</td><td><span class="code">nir_mean</span></td><td>NIR</td><td class="stat">Mean</td><td class="type-spec">Spectral</td><td class="desc">ROI mean reflectance</td></tr>
+        <tr class="data-row"><td class="n-col">17</td><td><span class="code">nir_std</span></td><td>NIR</td><td class="stat">SD</td><td class="type-spec">Spectral</td><td class="desc">ROI standard deviation</td></tr>
+        <tr class="data-row"><td class="n-col">18</td><td><span class="code">nir_contrast</span></td><td>NIR</td><td class="stat">Contrast</td><td class="type-tex">GLCM texture</td><td class="desc">Local intensity variation</td></tr>
+        <tr class="data-row"><td class="n-col">19</td><td><span class="code">nir_entropy</span></td><td>NIR</td><td class="stat">Entropy</td><td class="type-tex">GLCM texture</td><td class="desc">Disorder of gray-level distribution</td></tr>
+        <tr class="data-row"><td class="n-col">20</td><td><span class="code">nir_homogeneity</span></td><td>NIR</td><td class="stat">Homogeneity</td><td class="type-tex">GLCM texture</td><td class="desc">Closeness of distribution to diagonal</td></tr>
+
+        <!-- ═══ VEGETATION INDICES ═══ -->
+        <tr class="cat-row"><td colspan="6">Vegetation indices</td></tr>
+
+        <!-- NDVI -->
+        <tr class="src-row"><td colspan="6">NDVI — Normalized Difference Vegetation Index</td></tr>
+        <tr class="data-row"><td class="n-col">21</td><td><span class="code">NDVI_mean</span></td><td>NDVI</td><td class="stat">Mean</td><td class="type-spec">Spectral</td><td class="desc">ROI mean index value</td></tr>
+        <tr class="data-row"><td class="n-col">22</td><td><span class="code">NDVI_std</span></td><td>NDVI</td><td class="stat">SD</td><td class="type-spec">Spectral</td><td class="desc">ROI standard deviation</td></tr>
+        <tr class="data-row"><td class="n-col">23</td><td><span class="code">NDVI_contrast</span></td><td>NDVI</td><td class="stat">Contrast</td><td class="type-tex">GLCM texture</td><td class="desc">Local intensity variation</td></tr>
+        <tr class="data-row"><td class="n-col">24</td><td><span class="code">NDVI_entropy</span></td><td>NDVI</td><td class="stat">Entropy</td><td class="type-tex">GLCM texture</td><td class="desc">Disorder of gray-level distribution</td></tr>
+        <tr class="data-row"><td class="n-col">25</td><td><span class="code">NDVI_homogeneity</span></td><td>NDVI</td><td class="stat">Homogeneity</td><td class="type-tex">GLCM texture</td><td class="desc">Closeness of distribution to diagonal</td></tr>
+
+        <!-- NDRE -->
+        <tr class="src-row"><td colspan="6">NDRE — Normalized Difference Red-Edge Index</td></tr>
+        <tr class="data-row"><td class="n-col">26</td><td><span class="code">NDRE_mean</span></td><td>NDRE</td><td class="stat">Mean</td><td class="type-spec">Spectral</td><td class="desc">ROI mean index value</td></tr>
+        <tr class="data-row"><td class="n-col">27</td><td><span class="code">NDRE_std</span></td><td>NDRE</td><td class="stat">SD</td><td class="type-spec">Spectral</td><td class="desc">ROI standard deviation</td></tr>
+        <tr class="data-row"><td class="n-col">28</td><td><span class="code">NDRE_contrast</span></td><td>NDRE</td><td class="stat">Contrast</td><td class="type-tex">GLCM texture</td><td class="desc">Local intensity variation</td></tr>
+        <tr class="data-row"><td class="n-col">29</td><td><span class="code">NDRE_entropy</span></td><td>NDRE</td><td class="stat">Entropy</td><td class="type-tex">GLCM texture</td><td class="desc">Disorder of gray-level distribution</td></tr>
+        <tr class="data-row"><td class="n-col">30</td><td><span class="code">NDRE_homogeneity</span></td><td>NDRE</td><td class="stat">Homogeneity</td><td class="type-tex">GLCM texture</td><td class="desc">Closeness of distribution to diagonal</td></tr>
+
+        <!-- CIgreen -->
+        <tr class="src-row"><td colspan="6">CI<sub>green</sub> — Chlorophyll Index Green</td></tr>
+        <tr class="data-row"><td class="n-col">31</td><td><span class="code">CIgreen_mean</span></td><td>CI<sub>green</sub></td><td class="stat">Mean</td><td class="type-spec">Spectral</td><td class="desc">ROI mean index value</td></tr>
+        <tr class="data-row"><td class="n-col">32</td><td><span class="code">CIgreen_std</span></td><td>CI<sub>green</sub></td><td class="stat">SD</td><td class="type-spec">Spectral</td><td class="desc">ROI standard deviation</td></tr>
+        <tr class="data-row"><td class="n-col">33</td><td><span class="code">CIgreen_contrast</span></td><td>CI<sub>green</sub></td><td class="stat">Contrast</td><td class="type-tex">GLCM texture</td><td class="desc">Local intensity variation</td></tr>
+        <tr class="data-row"><td class="n-col">34</td><td><span class="code">CIgreen_entropy</span></td><td>CI<sub>green</sub></td><td class="stat">Entropy</td><td class="type-tex">GLCM texture</td><td class="desc">Disorder of gray-level distribution</td></tr>
+        <tr class="data-row"><td class="n-col">35</td><td><span class="code">CIgreen_homogeneity</span></td><td>CI<sub>green</sub></td><td class="stat">Homogeneity</td><td class="type-tex">GLCM texture</td><td class="desc">Closeness of distribution to diagonal</td></tr>
+
+        <!-- CIrededge -->
+        <tr class="src-row"><td colspan="6">CI<sub>red-edge</sub> — Chlorophyll Index Red-Edge</td></tr>
+        <tr class="data-row"><td class="n-col">36</td><td><span class="code">CIrededge_mean</span></td><td>CI<sub>red-edge</sub></td><td class="stat">Mean</td><td class="type-spec">Spectral</td><td class="desc">ROI mean index value</td></tr>
+        <tr class="data-row"><td class="n-col">37</td><td><span class="code">CIrededge_std</span></td><td>CI<sub>red-edge</sub></td><td class="stat">SD</td><td class="type-spec">Spectral</td><td class="desc">ROI standard deviation</td></tr>
+        <tr class="data-row"><td class="n-col">38</td><td><span class="code">CIrededge_contrast</span></td><td>CI<sub>red-edge</sub></td><td class="stat">Contrast</td><td class="type-tex">GLCM texture</td><td class="desc">Local intensity variation</td></tr>
+        <tr class="data-row"><td class="n-col">39</td><td><span class="code">CIrededge_entropy</span></td><td>CI<sub>red-edge</sub></td><td class="stat">Entropy</td><td class="type-tex">GLCM texture</td><td class="desc">Disorder of gray-level distribution</td></tr>
+        <tr class="data-row"><td class="n-col">40</td><td><span class="code">CIrededge_homogeneity</span></td><td>CI<sub>red-edge</sub></td><td class="stat">Homogeneity</td><td class="type-tex">GLCM texture</td><td class="desc">Closeness of distribution to diagonal</td></tr>
+
+      </tbody>
+    </table>
+  </div>
+
+  <p class="footnote">
+    <strong>GLCM parameters:</strong> ROI pixel values were quantized to 32 gray levels.
+    Gray-level co-occurrence matrices were computed with a one-pixel offset at four orientations
+    (0°, 45°, 90°, 135°) following Haralick et al. (1973); directional estimates were averaged
+    to obtain rotationally invariant ROI-level descriptors.
+    <strong>Statistic definitions:</strong>
+    Contrast = Σ<sub>i,j</sub> (i − j)² · p(i,j);
+    Entropy = −Σ<sub>i,j</sub> p(i,j) · log₂ p(i,j);
+    Homogeneity = Σ<sub>i,j</sub> p(i,j) / (1 + |i − j|),
+    where p(i,j) is the normalized co-occurrence frequency for gray levels i and j.
+  </p>
+
+</div>

@@ -235,7 +235,7 @@ QCP_plot <- ggplot(
       ),
       color = model
     ),
-    parse = TRUE, inherit.aes = FALSE, size = 3.7
+    parse = TRUE, inherit.aes = FALSE, size = 5
   ) +
   geom_text(
     data = mean_deviation_MPIW_per_model,
@@ -247,14 +247,14 @@ QCP_plot <- ggplot(
       ),
       color = model
     ),
-    parse = TRUE, inherit.aes = FALSE, size = 3.7
+    parse = TRUE, inherit.aes = FALSE, size = 5
   ) +
   theme_bw() +
   theme(
     panel.grid.minor = element_blank(),
-    axis.title  = element_text(size = 18, color = "black"),
-    axis.text   = element_text(size = 16, color = "black"),
-    strip.text  = element_text(size = 14, face = "bold"),
+    axis.title  = element_text(size = 22, color = "black"),
+    axis.text   = element_text(size = 20, color = "black"),
+    strip.text  = element_text(size = 20, face = "bold"),
     legend.position = "none"
   ) +
   scale_color_manual(
