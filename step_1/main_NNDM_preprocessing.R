@@ -88,6 +88,7 @@ fml_target <- as.formula(paste(target, "~ 1"))
 
 # Robust variogram fitting: exclude Gaussian (near-singular kriging matrix at
 # zero nugget) and floor nugget at 5% of total sill to prevent zero-nugget fits.
+# Used for global variogram and phi estimation (residual variograms).
 fit_vgm_robust <- function(formula, data, min_nugget_frac = 0.05, ...) {
   fit        <- autofitVariogram(formula, data, model = c("Sph", "Exp", "Ste"), ...)
   total_sill <- sum(fit$var_model$psill)
@@ -98,6 +99,46 @@ fit_vgm_robust <- function(formula, data, min_nugget_frac = 0.05, ...) {
     fit$var_model$psill[2] <- max(fit$var_model$psill[2] - deficit, 0)
   }
   fit
+}
+
+# Grid-search variogram fitting for per-fold OK LOO kriging.
+# For each combination of model × initial nugget × initial range, fit.variogram
+# runs the full WLS optimizer (Cressie fit.method=7) from that starting point.
+# The combination whose optimised fit achieves the lowest SSErr is kept.
+# No nugget floor: the optimizer is free to find nugget=0 if that is the best fit.
+fit_vgm_grid <- function(formula, data,
+                          models       = c("Sph", "Exp", "Ste"),
+                          nugget_fracs = c(0, 0.1, 0.3, 0.6),
+                          range_fracs  = c(0.15, 0.4, 0.75)) {
+  empvar    <- variogram(formula, data)
+  emp_sill  <- max(empvar$gamma)
+  max_dist  <- max(empvar$dist)
+
+  best_fit <- NULL
+  best_err <- Inf
+
+  for (mdl in models) {
+    for (nf in nugget_fracs) {
+      for (rf in range_fracs) {
+        nug  <- nf * emp_sill
+        rng  <- rf * max_dist
+        init <- vgm(psill = max(emp_sill - nug, 1e-6), model = mdl,
+                    range = rng, nugget = nug)
+        fit  <- tryCatch(fit.variogram(empvar, init), error = function(e) NULL)
+        if (is.null(fit)) next
+        err  <- tryCatch(attr(fit, "SSErr"), error = function(e) Inf)
+        if (is.finite(err) && !is.na(err) && err < best_err) {
+          best_err <- err
+          best_fit <- fit
+        }
+      }
+    }
+  }
+
+  if (is.null(best_fit))
+    best_fit <- autofitVariogram(formula, data, model = models)$var_model
+
+  list(var_model = best_fit)
 }
 
 # ---- Output directories ------------------------------------------------------
@@ -252,16 +293,9 @@ phi_and_nndm <- function(resid_df, resid_col, model_label, fold_csv_path) {
   resid_sf <- st_as_sf(resid_df, coords = c("x_25832", "y_25832"), crs = crs_epsg)
   resid_sp <- as(resid_sf, "Spatial")
   fml_r    <- as.formula(paste(resid_col, "~ 1"))
-  empvar     <- variogram(fml_r, data = resid_sp)
-  fitvar     <- fit.variogram(empvar, vgm(model = "Sph", nugget = 0))
-  total_sill_r <- sum(fitvar$psill)
-  min_nug_r    <- 0.05 * total_sill_r
-  if (fitvar$psill[1] < min_nug_r) {
-    deficit <- min_nug_r - fitvar$psill[1]
-    fitvar$psill[1] <- min_nug_r
-    fitvar$psill[2] <- max(fitvar$psill[2] - deficit, 0)
-  }
-  phi_val  <- fitvar$range[2]
+  fitvar_obj <- fit_vgm_grid(fml_r, resid_sp)
+  fitvar     <- fitvar_obj$var_model
+  phi_val    <- fitvar$range[2]
   message(sprintf("  %s: phi = %.2f m", model_label, phi_val))
 
   # Option A: per-fold nndm() with single test point as ppoints.
@@ -351,7 +385,7 @@ tabicl_resid_sf <- st_as_sf(tabicl_loo, coords = c("x_25832", "y_25832"), crs = 
 tabicl_resid_sp <- as(tabicl_resid_sf, "Spatial")
 
 message("  Fitting variogram on TabICL LOO residuals for RK LOO kriging...")
-rk_vgm_fit <- autofitVariogram(fml_resid_tabicl, tabicl_resid_sp)
+rk_vgm_fit <- fit_vgm_grid(fml_resid_tabicl, tabicl_resid_sp)
 rk_vgm     <- rk_vgm_fit$var_model
 
 message("  Computing LOO kriging corrections for RK residuals...")
@@ -398,13 +432,12 @@ for (i in seq_len(N)) {
                                 ok_pred = mean(z_train), ok_var = 0, ok_psi = NA_real_)
   } else {
     tryCatch({
-      vgm_fit <- autofitVariogram(fml_target, pts_sp[train_idx, ])
       capture.output(
         ok_fit <- krige(fml_target, pts_sp[train_idx, ], pts_sp[test_idx, ],
-                        model = vgm_fit$var_model),
+                        model = global_vgm),
         type = "output"
       )
-      ok_psi_i <- extract_ok_psi(pts_sp[train_idx, ], pts_sp[test_idx, ], vgm_fit$var_model)
+      ok_psi_i <- extract_ok_psi(pts_sp[train_idx, ], pts_sp[test_idx, ], global_vgm)
       ok_rows[[i]] <- data.frame(fold = i-1L, obs_idx = i-1L,
                                   ok_pred = ok_fit$var1.pred, ok_var = ok_fit$var1.var,
                                   ok_psi  = ok_psi_i)
