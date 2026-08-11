@@ -17,6 +17,7 @@ Writes : Results_TabICL/data_{date}/NNDM/model_comparison_{target}.csv
 """
 
 import os
+import sys
 import numpy as np
 import pandas as pd
 from scipy.stats import norm as scipy_norm
@@ -26,9 +27,10 @@ from sklearn.metrics import r2_score, mean_squared_error
 # User settings
 # =============================================================================
 ROOT   = r"/Users/takashi/LocalAnalysis/WeedMap/ForGithub"
-date   = "20250602"
+date   = "20250603"
 target = "log1p_Chenopodium_Count"
 PLOT   = True    # set False to skip the scatter plot
+if len(sys.argv) > 1: date = sys.argv[1]
 
 # =============================================================================
 os.chdir(ROOT)

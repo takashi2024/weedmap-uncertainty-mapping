@@ -16,7 +16,9 @@ library(emmeans)
 ROOT     <- "/Users/takashi/LocalAnalysis/WeedMap/ForGithub"
 PROB_DIR <- file.path(ROOT, "Results_TabICL", "NNDM_prob")
 out_dir  <- file.path(ROOT, "Results_TabICL", "NNDM_LMM_outputs")
+fig_dir  <- file.path(ROOT, "Results_TabICL", "figures")
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+dir.create(fig_dir, recursive = TRUE, showWarnings = FALSE)
 
 TARGET <- "log1p_Chenopodium_Count"
 T_VAL  <- 10
@@ -177,9 +179,9 @@ p_combined <- ggplot(emm_all_plot,
 
 scale_tag <- if (USE_LOGIT) "logit" else "raw"
 
-ggsave(file.path(out_dir, paste0("NNDM_emm_tau_combined_3panel_", scale_tag, ".png")),
+ggsave(file.path(fig_dir, paste0("Figure4_NNDM_emm_tau_combined_", scale_tag, ".png")),
        plot = p_combined, width = 7, height = 9, dpi = 300)
-ggsave(file.path(out_dir, paste0("NNDM_emm_tau_combined_3panel_", scale_tag, ".tiff")),
+ggsave(file.path(fig_dir, paste0("Figure4_NNDM_emm_tau_combined_", scale_tag, ".tiff")),
        plot = p_combined, width = 7, height = 9, dpi = 300,
        compression = "lzw")
 

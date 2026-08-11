@@ -4,7 +4,7 @@ library(patchwork)
 
 ROOT     <- "/Users/takashi/LocalAnalysis/WeedMap/ForGithub"
 PROB_DIR <- file.path(ROOT, "Results_TabICL", "NNDM_prob")
-OUTDIR   <- file.path(ROOT, "Results_TabICL", "figures")
+OUTDIR   <- file.path(ROOT, "Results_TabICL", "figures", "supp")
 TARGET   <- "log1p_Chenopodium_Count"
 T_VAL    <- 10
 
@@ -29,7 +29,7 @@ DATE_LABELS <- c(
   "20250424" = "24 Apr", "20250430" = "30 Apr",
   "20250506" = "06 May", "20250513" = "13 May",
   "20250520" = "20 May", "20250526" = "26 May",
-  "20250602" = "02 Jun"
+  "20250603" = "02 Jun"
 )
 
 # ---------------------------
@@ -106,8 +106,8 @@ combined <- wrap_plots(c(panels, list(plot_spacer(), plot_spacer())), ncol = 3) 
   plot_layout(guides = "collect") &
   theme(legend.position = "bottom")
 
-ggsave(file.path(OUTDIR, "PR_curve_by_date.png"),
+ggsave(file.path(OUTDIR, "Fig_S14_PR_curve_by_date.png"),
        plot = combined, width = 11, height = 11, dpi = 150)
-ggsave(file.path(OUTDIR, "PR_curve_by_date.tiff"),
+ggsave(file.path(OUTDIR, "Fig_S14_PR_curve_by_date.tiff"),
        plot = combined, width = 11, height = 11, dpi = 300, device = "tiff")
 cat("Saved PR_curve_by_date\n")

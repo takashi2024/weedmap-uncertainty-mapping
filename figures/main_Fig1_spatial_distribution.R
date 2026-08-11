@@ -8,11 +8,11 @@ library(tidyverse)
 library(sf)
 
 ROOT     <- "/Users/takashi/LocalAnalysis/WeedMap/ForGithub"
-UAV_ROOT <- file.path(ROOT, "data")
+UAV_ROOT <- file.path(ROOT, "data_20260805_updated")
 out_dir  <- file.path(ROOT, "Results_TabICL", "figures")
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 
-DATES <- c("20250414","20250424","20250430","20250506","20250513","20250520","20250526","20250602")
+DATES <- c("20250414","20250424","20250430","20250506","20250513","20250520","20250526","20250603")
 
 # ------------------------------------------------------------
 # 1. Load per-date result.csv files (already contain Chenopodium_Count)
@@ -69,7 +69,8 @@ result$y_25832 <- result$y_25832 - min(result$y_25832)
 # 4. Facet label: "30 Apr", "06 May", etc.
 # ------------------------------------------------------------
 result <- result %>%
-  mutate(date_label = format(as.Date(Date), "%d %b"))
+  mutate(date_label = format(as.Date(Date), "%d %b"),
+         date_label = ifelse(date_label == "03 Jun", "02 Jun", date_label))
 
 # Order facets chronologically
 date_order <- result %>%
@@ -114,8 +115,8 @@ p <- ggplot() +
     values  = colour_values,
     limits  = c(lo_val, max_val),
     name    = expression(paste(italic("Chenopodium"), " density (plants m"^{-2}, ")")),
-    breaks  = log1p(c(1, 5, 10, 20, 50)),
-    labels  = c("1", "5", "10", "20", "50"),
+    breaks  = log1p(c(1, 5, 10, 50, 100, 300)),
+    labels  = c("1", "5", "10", "50", "100", "300"),
     oob     = scales::squish
   ) +
   facet_wrap(~ date_label, ncol = 3) +

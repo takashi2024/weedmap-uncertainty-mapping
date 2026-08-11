@@ -202,9 +202,9 @@ p_combined <- ggplot(emm_all_plot,
 
 scale_tag <- if (USE_LOGIT) "logit" else "raw"
 
-ggsave(file.path(out_dir, paste0("NNDM_emm_tau_combined_", scale_tag, ".png")),
+ggsave(file.path(out_dir, paste0("Figure4_NNDM_emm_tau_combined_", scale_tag, ".png")),
        plot = p_combined, width = 7, height = 7, dpi = 300)
-ggsave(file.path(out_dir, paste0("NNDM_emm_tau_combined_", scale_tag, ".tiff")),
+ggsave(file.path(out_dir, paste0("Figure4_NNDM_emm_tau_combined_", scale_tag, ".tiff")),
        plot = p_combined, width = 7, height = 7, dpi = 300,
        compression = "lzw")
 

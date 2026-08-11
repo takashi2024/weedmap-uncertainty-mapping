@@ -8,7 +8,7 @@ library(ggplot2)
 ROOT  <- file.path("/Users/takashi/LocalAnalysis/WeedMap/ForGithub", "Results_TabICL")
 dates <- c(
   "data_20250414","data_20250424","data_20250430","data_20250506",
-  "data_20250513","data_20250520","data_20250526","data_20250602"
+  "data_20250513","data_20250520","data_20250526","data_20250603"
 )
 models <- c("OK", "RK", "Vanilla", "KpR")
 
@@ -238,18 +238,9 @@ p_bt  <- make_qcp_plot(
   "C: count scale (back-transformed) — all observations"
 )
 
-# Save individual plots
+# Save combined 3-row panel
 out_dir <- file.path(ROOT, "figures")
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
-
-ggsave(file.path(out_dir, "NNDM_QCP_logscale_all.tiff"),
-       p_log, dpi=300, width=10, height=7, units="in", device="tiff")
-ggsave(file.path(out_dir, "NNDM_QCP_logscale_nonzero.tiff"),
-       p_nz,  dpi=300, width=10, height=7, units="in", device="tiff")
-ggsave(file.path(out_dir, "NNDM_QCP_countscale.tiff"),
-       p_bt,  dpi=300, width=10, height=7, units="in", device="tiff")
-
-# Save combined 3-row panel
 library(patchwork)
 p_combined <- p_log / p_nz / p_bt +
   plot_annotation(

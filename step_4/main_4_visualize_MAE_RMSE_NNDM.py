@@ -31,7 +31,7 @@ plt.rcParams.update({
 ROOT         = r"/Users/takashi/LocalAnalysis/WeedMap/ForGithub"
 RESULTS_ROOT = os.path.join(ROOT, "Results_TabICL")
 DATE_MIN     = "20250414"
-DATE_MAX     = "20250602"
+DATE_MAX     = "20250603"
 
 MODEL_MAP = {
     "OK":             "OK",
@@ -77,13 +77,13 @@ perf = perf[(perf["date"] >= DATE_MIN) & (perf["date"] <= DATE_MAX)].copy()
 perf["date_dt"] = pd.to_datetime(perf["date"], format="%Y%m%d")
 perf = perf.sort_values(["target", "model_group", "date_dt"]).reset_index(drop=True)
 
-out_dir = os.path.join(RESULTS_ROOT, "figures")
+out_dir = os.path.join(RESULTS_ROOT, "figures", "supp")
 os.makedirs(out_dir, exist_ok=True)
 
 # =============================================================================
 # 2. Helper: draw one time-series panel
 # =============================================================================
-def draw_panel(ax, df_t, metric, ylabel):
+def draw_panel(ax, df_t, metric, ylabel, exact_dates, tick_labels):
     for mg in PLOT_MODEL_GROUPS:
         g = df_t[df_t["model_group"] == mg]
         if g.empty:
@@ -93,8 +93,8 @@ def draw_panel(ax, df_t, metric, ylabel):
                 color=COLORS[mg], linewidth=1.8, markersize=6)
     ax.axhline(0, color="grey", linewidth=0.8, linestyle="--")
     ax.set_ylabel(ylabel, fontsize=12)
-    ax.xaxis.set_major_formatter(mdates.DateFormatter("%-d %b"))
-    ax.tick_params(axis="x", rotation=45)
+    ax.set_xticks(exact_dates)
+    ax.set_xticklabels(tick_labels, rotation=45, ha="right")
     ax.grid(alpha=0.25, linewidth=0.6)
 
 # =============================================================================
@@ -104,38 +104,45 @@ targets = sorted(perf["target"].dropna().unique())
 
 for tgt in targets:
     df_t = perf[perf["target"] == tgt].copy()
+    exact_dates = sorted(df_t["date_dt"].unique())
+    tick_labels = [d.strftime("%-d %b") for d in exact_dates]
+    tick_labels = ["2 Jun" if l == "3 Jun" else l for l in tick_labels]
 
     # --- Individual ME (count scale) figure ---
     fig, ax = plt.subplots(figsize=(8, 4))
-    draw_panel(ax, df_t, "ME_count", "ME (count scale, plants m$^{-2}$)")
+    draw_panel(ax, df_t, "ME_count", "ME (density scale, plants m$^{-2}$)",
+               exact_dates, tick_labels)
     ax.legend(frameon=False)
     fig.tight_layout()
     for ext in (".png", ".tiff"):
-        fig.savefig(os.path.join(out_dir, f"NNDM_ME_count_timeseries_{tgt}{ext}"),
+        fig.savefig(os.path.join(out_dir, f"Fig_S3_NNDM_ME_count_timeseries_{tgt}{ext}"),
                     dpi=300, bbox_inches="tight")
     plt.close(fig)
     print(f"Saved ME_count figure for {tgt}")
 
     # --- Individual RMSE (count scale) figure ---
     fig, ax = plt.subplots(figsize=(8, 4))
-    draw_panel(ax, df_t, "RMSE_count", "RMSE (count scale, plants m$^{-2}$)")
+    draw_panel(ax, df_t, "RMSE_count", "RMSE (density scale, plants m$^{-2}$)",
+               exact_dates, tick_labels)
     ax.legend(frameon=False)
     fig.tight_layout()
     for ext in (".png", ".tiff"):
-        fig.savefig(os.path.join(out_dir, f"NNDM_RMSE_count_timeseries_{tgt}{ext}"),
+        fig.savefig(os.path.join(out_dir, f"Fig_S3_NNDM_RMSE_count_timeseries_{tgt}{ext}"),
                     dpi=300, bbox_inches="tight")
     plt.close(fig)
     print(f"Saved RMSE_count figure for {tgt}")
 
     # --- Combined 2-row figure (ME top, RMSE bottom) ---
     fig, axes = plt.subplots(2, 1, figsize=(8, 7), sharex=True)
-    draw_panel(axes[0], df_t, "ME_count",   "ME (count scale, plants m$^{-2}$)")
-    draw_panel(axes[1], df_t, "RMSE_count", "RMSE (count scale, plants m$^{-2}$)")
+    draw_panel(axes[0], df_t, "ME_count",   "ME (density scale, plants m$^{-2}$)",
+               exact_dates, tick_labels)
+    draw_panel(axes[1], df_t, "RMSE_count", "RMSE (density scale, plants m$^{-2}$)",
+               exact_dates, tick_labels)
     axes[0].legend(frameon=False, fontsize=9)
     axes[1].set_xlabel("")
     fig.tight_layout()
     for ext in (".png", ".tiff"):
-        fig.savefig(os.path.join(out_dir, f"NNDM_ME_RMSE_count_combined_{tgt}{ext}"),
+        fig.savefig(os.path.join(out_dir, f"Fig_S3_NNDM_ME_RMSE_count_combined_{tgt}{ext}"),
                     dpi=300, bbox_inches="tight")
     plt.close(fig)
     print(f"Saved combined ME+RMSE (count scale) figure for {tgt}")

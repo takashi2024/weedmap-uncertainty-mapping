@@ -197,13 +197,54 @@ Rscript step_5/main_5_LMM_NNDM_tau_recall_precision_sprayedfrac.R >> "$LOG" 2>&1
 
 log "===== Phase 5 complete ====="
 
+log "===== Phase 6: 1m grid predictions (step_6/) ====="
+
+log "  Build field grid (skip if spatial/field_1m_grid.gpkg exists)"
+if [ ! -f "$ROOT/spatial/field_1m_grid.gpkg" ]; then
+  conda run -n py39 python step_6/build_field_grid.py >> "$LOG" 2>&1
+  log "  Field grid built"
+else
+  log "  Field grid already exists, skipping"
+fi
+
+log "  Extract grid features (skip if all grid_features.csv exist)"
+GRID_FEATS_DONE=true
+for DATE in "${DATES[@]}"; do
+  if [ ! -f "$ROOT/grid_predictions/$DATE/grid_features.csv" ]; then
+    GRID_FEATS_DONE=false; break
+  fi
+done
+if [ "$GRID_FEATS_DONE" = false ]; then
+  conda run -n py39 python step_6/extract_grid_features.py >> "$LOG" 2>&1
+  log "  Grid features extracted"
+else
+  log "  Grid features already exist, skipping"
+fi
+
+log "  OK grid predictions"
+Rscript step_6/predict_grid_OK.R >> "$LOG" 2>&1
+log "  OK grid done"
+
+log "  TabICL + KpR grid predictions"
+conda run -n "$CONDA_ENV" python step_6/predict_grid_tabicl.py >> "$LOG" 2>&1
+log "  TabICL + KpR grid done"
+
+log "  RK grid predictions"
+Rscript step_6/predict_grid_RK.R >> "$LOG" 2>&1
+log "  RK grid done"
+
+log "===== Phase 6 complete ====="
+
 log "===== Figures (figures/) ====="
 
 log "  Fig 1 — spatial distribution"
 Rscript figures/main_Fig1_spatial_distribution.R >> "$LOG" 2>&1
 
-log "  Supplementary maps (prediction + uncertainty)"
+log "  Supplementary maps — point predictions (NNDM locations)"
 Rscript figures/main_supp_combined_maps.R >> "$LOG" 2>&1
+
+log "  Supplementary maps — 1m grid predictions"
+Rscript figures/figures_grid_maps.R >> "$LOG" 2>&1
 
 log "  Supplementary variograms"
 Rscript figures/main_supp_variogram_plots.R >> "$LOG" 2>&1

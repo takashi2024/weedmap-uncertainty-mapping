@@ -20,7 +20,7 @@ RESULTS_ROOT = os.path.join(ROOT, "Results_TabICL")
 
 METRIC   = "R2_log"   # NNDM LOO R² in log-scale (stored as "R2" in source files)
 DATE_MIN = "20250414"
-DATE_MAX = "20250602"
+DATE_MAX = "20250603"
 
 # Model name mapping: source CSV "Model" value -> canonical label
 MODEL_MAP = {
@@ -116,18 +116,21 @@ for tgt in targets:
     ax.axhline(0, color="grey", linewidth=0.8, linestyle="--")
     ax.set_xlabel("")
     ax.set_ylabel(r"$R^2$", fontsize=12)
-    ax.xaxis.set_major_formatter(mdates.DateFormatter("%-d %b"))
-    ax.tick_params(axis="x", rotation=45)
+    exact_dates = sorted(df_t["date_dt"].unique())
+    ax.set_xticks(exact_dates)
+    tick_labels = [d.strftime("%-d %b") for d in exact_dates]
+    tick_labels = ["2 Jun" if l == "3 Jun" else l for l in tick_labels]
+    ax.set_xticklabels(tick_labels, rotation=45, ha="right")
     ax.grid(alpha=0.25, linewidth=0.6)
     ax.legend(frameon=False)
     fig.tight_layout()
 
     fig_path = os.path.join(
         RESULTS_ROOT, "figures",
-        f"NNDM_R2_timeseries_{tgt}_{METRIC}_{DATE_MIN}_{DATE_MAX}.png"
+        f"Figure2_NNDM_R2_timeseries_{tgt}_{METRIC}_{DATE_MIN}_20250602.png"
     )
     fig.savefig(fig_path, dpi=300, bbox_inches="tight")
-    fig.savefig(fig_path.replace(".png", ".tiff"), dpi=300, bbox_inches="tight")
+    fig.savefig(fig_path.replace(".png", ".tiff"), dpi=300, bbox_inches="tight", format="tiff")
     print("Saved figure:", fig_path)
 
-plt.show()
+plt.close("all")

@@ -10,12 +10,12 @@ OUTDIR  <- file.path(RESDIR, "figures", "supp")
 dir.create(OUTDIR, recursive = TRUE, showWarnings = FALSE)
 
 DATES <- c("20250414","20250424","20250430","20250506",
-           "20250513","20250520","20250526","20250602")
+           "20250513","20250520","20250526","20250603")
 
 DATE_LABELS <- c(
   "20250414" = "14 Apr", "20250424" = "24 Apr", "20250430" = "30 Apr",
   "20250506" = "06 May", "20250513" = "13 May", "20250520" = "20 May",
-  "20250526" = "26 May", "20250602" = "02 Jun"
+  "20250526" = "26 May", "20250603" = "02 Jun"
 )
 
 NORM_PPF_09 <- qnorm(0.9)
@@ -145,25 +145,23 @@ for (date in DATES) {
   s_kpr <- split_pts(kpr_pts)
   s_rk  <- split_pts(rk_pts)
 
-  # --- Build and save both circle and square versions ---
-  for (cfg in list(list(shape=16, suffix=""), list(shape=15, suffix="_sq"))) {
-    p_obs <- make_panel(s_obs$z, s_obs$nz, "Observed",   show_x=FALSE, show_y=TRUE,  pt_shape=cfg$shape)
-    p_ok  <- make_panel(s_ok$z,  s_ok$nz,  "OK",         show_x=FALSE, show_y=FALSE, pt_shape=cfg$shape)
-    p_van <- make_panel(s_van$z, s_van$nz, "TabICL",     show_x=FALSE, show_y=FALSE, pt_shape=cfg$shape)
-    p_kpr <- make_panel(s_kpr$z, s_kpr$nz, "TabICL-KpR", show_x=TRUE,  show_y=FALSE, pt_shape=cfg$shape)
-    p_rk  <- make_panel(s_rk$z,  s_rk$nz,  "TabICL-RK",  show_x=TRUE,  show_y=FALSE, pt_shape=cfg$shape)
+  # --- Build and save circle version only ---
+  p_obs <- make_panel(s_obs$z, s_obs$nz, "Observed",   show_x=FALSE, show_y=TRUE,  pt_shape=16)
+  p_ok  <- make_panel(s_ok$z,  s_ok$nz,  "OK",         show_x=FALSE, show_y=FALSE, pt_shape=16)
+  p_van <- make_panel(s_van$z, s_van$nz, "TabICL",     show_x=FALSE, show_y=FALSE, pt_shape=16)
+  p_kpr <- make_panel(s_kpr$z, s_kpr$nz, "TabICL-KpR", show_x=TRUE,  show_y=FALSE, pt_shape=16)
+  p_rk  <- make_panel(s_rk$z,  s_rk$nz,  "TabICL-RK",  show_x=TRUE,  show_y=FALSE, pt_shape=16)
 
-    combined <- (p_obs | p_ok  | p_van) /
-                (plot_spacer() | p_kpr | p_rk) +
-      plot_layout(guides = "collect") &
-      theme(legend.position = "right",
-            plot.margin = unit(c(1, 2, 1, 2), "mm"))
+  combined <- (p_obs | p_ok  | p_van) /
+              (plot_spacer() | p_kpr | p_rk) +
+    plot_layout(guides = "collect") &
+    theme(legend.position = "right",
+          plot.margin = unit(c(1, 2, 1, 2), "mm"))
 
-    ggsave(file.path(OUTDIR, paste0("pred_map_", date, cfg$suffix, ".png")),
-           plot = combined, width = 13, height = 5.5, dpi = 150)
-    ggsave(file.path(OUTDIR, paste0("pred_map_", date, cfg$suffix, ".tiff")),
-           plot = combined, width = 13, height = 5.5, dpi = 300, device = "tiff")
-  }
+  ggsave(file.path(OUTDIR, paste0("pred_map_", date, ".png")),
+         plot = combined, width = 13, height = 5.5, dpi = 150)
+  ggsave(file.path(OUTDIR, paste0("pred_map_", date, ".tiff")),
+         plot = combined, width = 13, height = 5.5, dpi = 300, device = "tiff")
   cat("Saved pred_map for", date, "\n")
 }
 

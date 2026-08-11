@@ -20,9 +20,42 @@ library(gstat)
 library(sf)
 library(sp)
 
+# Grid-search variogram fitting — same method as main_NNDM_preprocessing.R
+fit_vgm_grid <- function(formula, data,
+                          models       = c("Sph", "Exp", "Ste"),
+                          nugget_fracs = c(0, 0.1, 0.3, 0.6),
+                          range_fracs  = c(0.15, 0.4, 0.75)) {
+  empvar   <- variogram(formula, data)
+  emp_sill <- max(empvar$gamma)
+  max_dist <- max(empvar$dist)
+  best_fit <- NULL
+  best_err <- Inf
+  for (mdl in models) {
+    for (nf in nugget_fracs) {
+      for (rf in range_fracs) {
+        nug  <- nf * emp_sill
+        rng  <- rf * max_dist
+        init <- vgm(psill = max(emp_sill - nug, 1e-6), model = mdl,
+                    range = rng, nugget = nug)
+        fit  <- tryCatch(fit.variogram(empvar, init), error = function(e) NULL)
+        if (is.null(fit)) next
+        err  <- tryCatch(attr(fit, "SSErr"), error = function(e) Inf)
+        if (is.finite(err) && !is.na(err) && err < best_err) {
+          best_err <- err; best_fit <- fit
+        }
+      }
+    }
+  }
+  if (is.null(best_fit))
+    best_fit <- autofitVariogram(formula, data, model = models)$var_model
+  list(var_model = best_fit)
+}
+
 # ---- User settings -----------------------------------------------------------
-date   <- "20250602"
+date   <- "20250603"
 target <- "log1p_Chenopodium_Count"
+.args <- commandArgs(trailingOnly = TRUE)
+if (length(.args) >= 1) date <- .args[1]
 crs_epsg <- 25832
 
 # Option A: refit variogram for every fold (N fits, rigorous)
@@ -31,7 +64,8 @@ FIT_VARIOGRAM_PER_FOLD <- FALSE   # TRUE = Option A,  FALSE = Option B
 
 ROOT     <- "/Users/takashi/LocalAnalysis/WeedMap/ForGithub"
 base_dir <- file.path(ROOT, "Results_TabICL", paste0("data_", date), "NNDM", "RK")
-qs       <- c(0.001, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.999)
+qs       <- c(0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50,
+             0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95)
 
 # ---- Helper ------------------------------------------------------------------
 R2 <- function(y, y_hat) 1 - sum((y - y_hat)^2) / sum((y - mean(y))^2)
@@ -67,10 +101,11 @@ if (!FIT_VARIOGRAM_PER_FOLD) {
   loo_df[[resid_col]] <- loo_df[[py_resid_col]]  # resid_col = {target}_resid_LOO
 
   loo_sp <- as(st_as_sf(loo_df, coords = c("x_25832", "y_25832"), crs = crs_epsg), "Spatial")
-  global_vgm <- autofitVariogram(fml_resid, input_data = loo_sp)
-  fixed_vgm  <- global_vgm$var_model
-  message("  Global variogram fitted.")
-  print(fixed_vgm)
+  vgm_fit   <- fit_vgm_grid(fml_resid, loo_sp)
+  fixed_vgm <- vgm_fit$var_model
+  message(sprintf("  Global variogram: %s  nugget=%.4f  sill=%.4f  range=%.2f m",
+                  fixed_vgm$model[2], fixed_vgm$psill[1],
+                  fixed_vgm$psill[2], fixed_vgm$range[2]))
 }
 
 # ---- Main fold loop ----------------------------------------------------------
@@ -105,11 +140,12 @@ for (fold_i in 0:(N - 1)) {
       resid_var <- 0
     } else {
       tryCatch({
-        ok        <- autoKrige(fml_resid, input_data = tr_sp, new_data = te_sp)
-        resid_hat <- ok$krige_output$var1.pred
-        resid_var <- ok$krige_output$var1.var
+        fold_vgm  <- fit_vgm_grid(fml_resid, tr_sp)$var_model
+        ok_pred   <- krige(fml_resid, tr_sp, te_sp, model = fold_vgm)
+        resid_hat <- ok_pred$var1.pred
+        resid_var <- ok_pred$var1.var
       }, error = function(e) {
-        message(sprintf("  [WARN] fold %d autoKrige failed: %s", fold_i, conditionMessage(e)))
+        message(sprintf("  [WARN] fold %d krige failed: %s", fold_i, conditionMessage(e)))
         resid_hat <<- 0
         resid_var <<- 0
       })

@@ -9,7 +9,7 @@ ROOT <- "Results_TabICL"
 
 dates <- c(
   "data_20250414","data_20250424","data_20250430","data_20250506",
-  "data_20250513","data_20250520","data_20250526","data_20250602"
+  "data_20250513","data_20250520","data_20250526","data_20250603"
 )
 
 models <- c("OK", "RK", "Vanilla", "KpR")
@@ -193,41 +193,41 @@ QCP_plot <- ggplot(
       color = model,
       group = interaction(dataset, target_var))
 ) +
-  geom_line(linewidth = 0.6, alpha = 0.4) +
+  geom_line(linewidth = 0.8, alpha = 0.8) +
   geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "grey40") +
   geom_text(
     data = mean_deviation_MPIW_per_model,
     aes(
       x = 65, y = 8,
       label = paste0(
-        "paste(bar(delta)[QCP] == ", round(mean_absolute_deviation, 1),
-        ", \", \", bar(PIW)[norm] == ", round(MPIW_norm_mean, 2), ")"
+        "paste(bar(delta)[QCP] == plain(\"", sprintf("%.1f", mean_absolute_deviation),
+        "\"), \", \", bar(PIW)[norm] == plain(\"", sprintf("%.2f", MPIW_norm_mean), "\"))"
       ),
       color = model
     ),
-    parse = TRUE, inherit.aes = FALSE, size = 3.7
+    parse = TRUE, inherit.aes = FALSE, size = 4.5
   ) +
   geom_text(
     data = mean_deviation_MPIW_per_model,
     aes(
       x = 65, y = 20,
       label = paste0(
-        "paste(widetilde(delta)[QCP] == ", round(median_absolute_deviation, 1),
-        ", \", \", widetilde(PIW)[norm] == ", round(MPIW_norm_median, 2), ")"
+        "paste(widetilde(delta)[QCP] == plain(\"", sprintf("%.1f", median_absolute_deviation),
+        "\"), \", \", widetilde(PIW)[norm] == plain(\"", sprintf("%.2f", MPIW_norm_median), "\"))"
       ),
       color = model
     ),
-    parse = TRUE, inherit.aes = FALSE, size = 3.7
+    parse = TRUE, inherit.aes = FALSE, size = 4.5
   ) +
   scale_x_continuous(name = "Target quantile (%)", breaks = seq(0, 100, 25), limits = c(0, 100)) +
   scale_y_continuous(name = "QCP (%)",             breaks = seq(0, 100, 25), limits = c(0, 100)) +
   scale_color_manual(values = model_colors) +
-  theme_bw() +
+  theme_bw(base_size = 12) +
   theme(
     panel.grid.minor = element_blank(),
-    axis.title  = element_text(size = 18, color = "black"),
-    axis.text   = element_text(size = 16, color = "black"),
-    strip.text  = element_text(size = 14, face = "bold"),
+    axis.title  = element_text(size = 13, color = "black"),
+    axis.text   = element_text(size = 11, color = "black"),
+    strip.text  = element_text(size = 13, face = "bold"),
     legend.position = "none"
   ) +
   facet_wrap(~ model)
@@ -240,11 +240,11 @@ QCP_plot
 dir.create(file.path(ROOT, "figures"), showWarnings = FALSE, recursive = TRUE)
 
 ggsave(
-  file.path(ROOT, "figures", "NNDM_QCP_plot.tiff"),
+  file.path(ROOT, "figures", "Figure3_NNDM_QCP_plot.tiff"),
   plot = QCP_plot, dpi = 300, width = 10, height = 7, units = "in", device = "tiff"
 )
 ggsave(
-  file.path(ROOT, "figures", "NNDM_QCP_plot.png"),
+  file.path(ROOT, "figures", "Figure3_NNDM_QCP_plot.png"),
   plot = QCP_plot, dpi = 150, width = 10, height = 7, units = "in"
 )
 

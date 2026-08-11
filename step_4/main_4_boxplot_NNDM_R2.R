@@ -10,7 +10,7 @@ dir.create(out_dir, showWarnings = FALSE)
 # ---------------------------
 d <- read.csv(
   file.path(ROOT, "Results_TabICL", "figures",
-            "NNDM_best_models_by_date_20250414_20250602_R2_log.csv"),
+            "NNDM_best_models_by_date_20250414_20250603_R2_log.csv"),
   stringsAsFactors = FALSE
 )
 
@@ -68,16 +68,6 @@ for (tgt in targets) {
     )
 }
 
-# ---------------------------
-# Save
-# ---------------------------
-for (tgt in names(plots)) {
-  png_path <- file.path(out_dir, paste0("NNDM_R2_boxplot_", tgt, ".png"))
-  tif_path <- file.path(out_dir, paste0("NNDM_R2_boxplot_", tgt, ".tiff"))
-  ggsave(png_path, plot = plots[[tgt]], width = 5.5, height = 4.5, dpi = 150)
-  ggsave(tif_path, plot = plots[[tgt]], width = 5.5, height = 4.5, dpi = 300,
-         device = "tiff")
-  cat("Saved:", png_path, "\n")
-}
+# R2 boxplot output disabled — not needed for final figures
 
 plots[[1]]

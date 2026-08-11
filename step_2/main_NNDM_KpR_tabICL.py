@@ -28,11 +28,15 @@ from tabicl import TabICLRegressor
 ROOT      = r"/Users/takashi/LocalAnalysis/WeedMap/ForGithub"
 DATA_ROOT = os.path.join(ROOT, "Dataset_for_python")
 RESULTS   = os.path.join(ROOT, "Results_TabICL")
-UAV_ROOT  = os.path.join(ROOT, "data")
+UAV_ROOT  = os.path.join(ROOT, "data_20260805_updated")
 
-date      = "20250602"
+date      = "20250603"
 target    = "log1p_Chenopodium_Count"
-quantiles = [0.001, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.999]
+quantiles = [0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50,
+             0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95]
+
+# Command-line override: python main_NNDM_KpR_tabICL.py <date>
+if len(sys.argv) > 1: date = sys.argv[1]
 TOL_M     = 1.0
 DEVICE       = "cpu"    # safe default on macOS
 N_ESTIMATORS = 4        # ensemble size

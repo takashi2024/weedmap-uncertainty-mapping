@@ -50,22 +50,25 @@ library(tidyr)
 date_id  <- 8
 target   <- "log1p_Chenopodium_Count"
 
-# Allow overriding from command line: Rscript main_NNDM_preprocessing.R <date_id> [target]
+# Allow overriding from command line: Rscript main_NNDM_preprocessing.R <date_id> [target] [--stage2-only]
 .args <- commandArgs(trailingOnly = TRUE)
 if (length(.args) >= 1) date_id <- as.integer(.args[1])
 if (length(.args) >= 2) target  <- .args[2]
+STAGE2_ONLY <- "--stage2-only" %in% .args
 crs_epsg <- 25832
-qs       <- c(0.001, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.999)
+qs       <- c(0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50,
+             0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95)
 
-DATES <- c("20250414","20250424","20250430","20250506","20250513","20250520","20250526","20250602")
-ROOT  <- "/Users/takashi/LocalAnalysis/WeedMap/ForGithub"
+DATES     <- c("20250414","20250424","20250430","20250506","20250513","20250520","20250526","20250603")
+ROOT      <- "/Users/takashi/LocalAnalysis/WeedMap/ForGithub"
+FIELD_GPKG <- "/Users/takashi/LocalAnalysis/WeedMap/UAV analysis/Field.gpkg"
 
 # ------------------------------------------------------------------------------
 
 # ---- 1. Load and prepare data ------------------------------------------------
 path_date <- DATES[date_id]
 uav_tag   <- paste0(substr(path_date, 3, 8), "F3mRX")
-UAV_CSV   <- file.path(ROOT, "data", uav_tag, "result.csv")
+UAV_CSV   <- file.path(ROOT, "data_20260805_updated", uav_tag, "result.csv")
 
 message(sprintf("Processing date: %s  (date_id=%d)", path_date, date_id))
 result <- read.csv(UAV_CSV)
@@ -85,6 +88,22 @@ message(sprintf("N observations: %d", N))
 pts_sf     <- st_as_sf(result, coords = c("x_25832", "y_25832"), crs = crs_epsg)
 pts_sp     <- as(pts_sf, "Spatial")
 fml_target <- as.formula(paste(target, "~ 1"))
+
+# ---- Build 1m prediction grid from field boundary (used as ppoints in NNDM) --
+# Using the full field grid (not just sample locations) gives an honest G(d) CDF
+# that reflects the actual prediction scenario: predicting at all 1m cells across
+# the field, including gaps between transect strips.
+field_raw  <- st_read(FIELD_GPKG, quiet = TRUE)
+field_sf   <- st_transform(st_union(field_raw), crs = crs_epsg)
+field_bbox <- st_bbox(field_sf)
+grid_x     <- seq(floor(field_bbox["xmin"]) + 0.5, ceiling(field_bbox["xmax"]), 1.0)
+grid_y     <- seq(floor(field_bbox["ymin"]) + 0.5, ceiling(field_bbox["ymax"]), 1.0)
+grid_coords <- expand.grid(x = grid_x, y = grid_y)
+grid_sf_all <- st_as_sf(grid_coords, coords = c("x", "y"), crs = crs_epsg)
+# Keep only cells within field boundary
+in_field   <- st_intersects(grid_sf_all, field_sf, sparse = FALSE)[, 1]
+grid_sf    <- grid_sf_all[in_field, ]
+message(sprintf("Field prediction grid: %d cells (1m x 1m within field boundary)", nrow(grid_sf)))
 
 # Robust variogram fitting: exclude Gaussian (near-singular kriging matrix at
 # zero nugget) and floor nugget at 5% of total sill to prevent zero-nugget fits.
@@ -158,10 +177,9 @@ kpr_loo_path    <- file.path(nndm_data_dir, "kpr_tabicl_loo_residuals.csv")
 # =============================================================================
 # STAGE 1: Global variogram + LOO kriging (OK phi + KpR global features)
 # =============================================================================
-message("\n=== STAGE 1: LOO kriging for phi estimation ===")
-
+# Global variogram and helper always needed (Stage 1 and Stage 2)
 message("Fitting global variogram on full dataset...")
-global_vgm_fit <- fit_vgm_robust(fml_target, pts_sp)
+global_vgm_fit <- fit_vgm_grid(fml_target, pts_sp)
 global_vgm     <- global_vgm_fit$var_model
 message(sprintf("  Global variogram: %s  nugget=%.4f  sill=%.4f  range=%.2f m",
                 global_vgm$model[2], global_vgm$psill[1],
@@ -194,6 +212,15 @@ extract_ok_psi <- function(training_sp, target_sp, vgm_model) {
   if (is.null(sol)) return(NA_real_)
   sol[n + 1L]
 }
+
+if (STAGE2_ONLY) {
+  message("\n=== STAGE 1 SKIPPED (--stage2-only) — loading saved outputs ===")
+  if (!file.exists(ok_loo_path) || !file.exists(kpr_global_loo_path))
+    stop(sprintf("Stage 1 outputs missing for %s. Run without --stage2-only first.", path_date))
+  ok_loo_df   <- read.csv(ok_loo_path)
+  kpr_glob_df <- read.csv(kpr_global_loo_path)
+  message(sprintf("  Loaded ok_loo_errors.csv (%d rows)", nrow(ok_loo_df)))
+} else {
 
 message(sprintf("Running LOO kriging (N=%d calls, global variogram)...", N))
 message("  This produces: ok_loo_errors.csv  and  kpr_global_loo_features.csv")
@@ -240,6 +267,7 @@ write.csv(ok_loo_df,   ok_loo_path,         row.names = FALSE)
 write.csv(kpr_glob_df, kpr_global_loo_path, row.names = FALSE)
 message(sprintf("Saved: %s", ok_loo_path))
 message(sprintf("Saved: %s", kpr_global_loo_path))
+} # end if (!STAGE2_ONLY)
 
 # =============================================================================
 # Check for Python LOO residuals — stop here if not yet produced
@@ -298,33 +326,25 @@ phi_and_nndm <- function(resid_df, resid_col, model_label, fold_csv_path) {
   phi_val    <- fitvar$range[2]
   message(sprintf("  %s: phi = %.2f m", model_label, phi_val))
 
-  # Option A: per-fold nndm() with single test point as ppoints.
-  # When ppoints = tpoints (same set), Gij = 0 for all points so nothing
-  # is ever excluded. Using ppoints = single test point gives the correct
-  # nearest-neighbor distance and proper NNDM LOO exclusions.
-  train_per_fold <- vector("list", N)
-  excl_per_fold  <- vector("list", N)
-  rows_list      <- vector("list", N * 3L)
-  row_pos        <- 1L
+  # Single nndm() call with the 1m field grid as ppoints.
+  # This is the intended NNDM usage: ppoints represents all locations where the
+  # model will actually be deployed (wall-to-wall 1m grid), so G(d) reflects
+  # the true prediction gap including areas between transect strips.
+  # Much faster than the previous per-fold approach (1 call vs N calls).
+  message(sprintf("    Running nndm() with %d grid ppoints ...", nrow(grid_sf)))
+  nndm_out <- nndm(tpoints = pts_sf, ppoints = grid_sf,
+                   phi = phi_val, min_train = 0.5)
 
+  train_per_fold <- nndm_out$indx_train    # list of N vectors, 1-based
+  excl_per_fold  <- nndm_out$indx_excluded # list of N vectors, 1-based
+
+  # Build fold CSV (0-based obs_idx for Python compatibility)
+  rows_list <- vector("list", N * 3L)
+  row_pos   <- 1L
   for (i in seq_len(N)) {
-    tpoints_i <- pts_sf[-i, ]
-    ppoints_i <- pts_sf[i,  ]
-    nndm_i    <- nndm(tpoints = tpoints_i, ppoints = ppoints_i,
-                      phi = phi_val, min_train = 0.5)
+    train_orig <- train_per_fold[[i]]
+    excl_orig  <- excl_per_fold[[i]]
 
-    # Map local indices (1..N-1) back to original global indices (1..N)
-    orig_train  <- which(seq_len(N) != i)
-    train_local <- nndm_i$indx_train[[1]]
-    excl_local  <- nndm_i$indx_exclude[[1]]
-
-    train_orig <- orig_train[train_local]
-    excl_orig  <- if (length(excl_local) > 0) orig_train[excl_local] else integer(0)
-
-    train_per_fold[[i]] <- train_orig   # 1-based global
-    excl_per_fold[[i]]  <- excl_orig    # 1-based global
-
-    # Fold CSV rows (0-based obs_idx for Python compatibility)
     rows_list[[row_pos]] <- data.frame(fold = i-1L, obs_idx = i-1L,
                                        role = "test", stringsAsFactors = FALSE)
     row_pos <- row_pos + 1L
@@ -338,9 +358,6 @@ phi_and_nndm <- function(resid_df, resid_col, model_label, fold_csv_path) {
                                          role = "excluded", stringsAsFactors = FALSE)
       row_pos <- row_pos + 1L
     }
-
-    if (i %% 50 == 0 || i == N)
-      message(sprintf("    nndm fold %d/%d", i, N))
   }
 
   folds_df <- do.call(rbind, rows_list[seq_len(row_pos - 1L)])

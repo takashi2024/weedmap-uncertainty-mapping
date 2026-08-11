@@ -9,12 +9,12 @@ OUTDIR  <- file.path(RESDIR, "figures", "supp")
 dir.create(OUTDIR, recursive = TRUE, showWarnings = FALSE)
 
 DATES <- c("20250414","20250424","20250430","20250506",
-           "20250513","20250520","20250526","20250602")
+           "20250513","20250520","20250526","20250603")
 
 DATE_LABELS <- c(
   "20250414" = "(a) 14 April", "20250424" = "(b) 24 April", "20250430" = "(c) 30 April",
   "20250506" = "(d) 06 May",   "20250513" = "(e) 13 May",   "20250520" = "(f) 20 May",
-  "20250526" = "(g) 26 May",   "20250602" = "(h) 02 June"
+  "20250526" = "(g) 26 May",   "20250603" = "(h) 02 Jun"
 )
 
 METHOD_ORDER <- c("Observed", "OK", "TabICL", "TabICL-KpR", "TabICL-RK")
