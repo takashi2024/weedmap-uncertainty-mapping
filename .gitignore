@@ -13,3 +13,4 @@ Results_TabICL/NNDM_prob/
 Results_TabICL/NNDM_LMM_outputs/
 Results_TabICL/pipeline_run.log
 Results_TabICL/**/*.tiff
+Results_TabICL/figures/supp/pred_map_*
