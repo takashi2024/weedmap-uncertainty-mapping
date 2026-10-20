@@ -107,14 +107,22 @@ WeedMap/
 │   ├── main_supp_combined_maps.R              # Fig. S13–S14 — per-date uncertainty maps (NNDM LOO CV)
 │   ├── figures_grid_maps.R                    # Fig. S5–S14 — 1m grid prediction + uncertainty maps
 │   └── main_supp_variogram_plots.R            # Fig. S2–S3 — variograms (OK, RK residuals)
+├── Results_TabICL/                      # Generated outputs (partially tracked — see note below)
+│   └── figures/                         # ★ Committed figure outputs (PNG only)
+│       ├── Figure1_spatial_distribution_Chenopodium.png       # Fig. 1
+│       ├── Figure2_NNDM_R2_timeseries_*.png                   # Fig. 2
+│       ├── Figure3_NNDM_QCP_plot.png                          # Fig. 3
+│       ├── Figure4_NNDM_emm_tau_combined_raw.png              # Fig. 4
+│       └── supp/                        # Supplementary figures (Fig. S2–S15, PNG only)
 ├── archive/                             # Archived scripts no longer used in main pipeline
 │   ├── step_5/                          # Earlier LMM scripts (R² and recall/precision only)
+│   ├── figures/                         # Archived figure scripts (LOO CV prediction maps)
 │   └── Results_TabICL/                  # Archived LMM outputs
 ├── run_pipeline_TabICL.sh                     # Full pipeline automation
 └── README.md
 ```
 
-All outputs go to `Results_TabICL/` (created automatically).
+> **`Results_TabICL/` note**: All pipeline outputs are written here (created automatically at runtime). Only `Results_TabICL/figures/` is tracked in this repository (PNG files only). Per-date prediction CSVs (`data_*/`), probabilistic outputs (`NNDM_prob/`), and TIFF files are excluded via `.gitignore` and remain local.
 
 ---
 
