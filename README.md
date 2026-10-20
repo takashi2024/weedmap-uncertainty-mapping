@@ -105,7 +105,6 @@ WeedMap/
 ├── figures/                             # Manuscript and supplementary figures
 │   ├── main_Fig1_spatial_distribution.R       # Fig. 1 — observation maps
 │   ├── main_supp_combined_maps.R              # Fig. S13–S14 — per-date uncertainty maps (NNDM LOO CV)
-│   ├── main_supp_prediction_maps.R            # Per-date NNDM LOO CV prediction maps
 │   ├── figures_grid_maps.R                    # Fig. S5–S14 — 1m grid prediction + uncertainty maps
 │   └── main_supp_variogram_plots.R            # Fig. S2–S3 — variograms (OK, RK residuals)
 ├── archive/                             # Archived scripts no longer used in main pipeline
