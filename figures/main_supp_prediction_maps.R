@@ -18,8 +18,6 @@ DATE_LABELS <- c(
   "20250526" = "26 May", "20250603" = "02 Jun"
 )
 
-NORM_PPF_09 <- qnorm(0.9)
-
 # ---------------------------
 # Shared colour scale (identical to main_Fig1_spatial_distribution.R)
 # ---------------------------
@@ -45,7 +43,22 @@ all_coords <- bind_rows(Filter(Negate(is.null), all_coords))
 X_MIN <- min(all_coords$x_25832)
 Y_MIN <- min(all_coords$y_25832)
 
-sigma2_from_quantiles <- function(q09, q01) ((q09 - q01) / (2 * NORM_PPF_09))^2
+.TABICL_PROBS <- c(0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45,
+                   0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95)
+.TABICL_QCOLS <- paste0("q", .TABICL_PROBS)
+
+mean_count_trapz <- function(q_df) {
+  q_log  <- as.matrix(q_df[, .TABICL_QCOLS])
+  q_cnt  <- pmax(exp(q_log) - 1, 0)
+  lower  <- matrix(0, nrow = nrow(q_df), ncol = 1)
+  q_upp  <- pmax(exp(q_df$q0.95 + (q_df$q0.95 - q_df$q0.9)) - 1, 0)
+  upper  <- matrix(q_upp, ncol = 1)
+  all_q  <- cbind(lower, q_cnt, upper)
+  all_p  <- c(0.0, .TABICL_PROBS, 1.0)
+  widths <- diff(all_p)
+  midpts <- (all_q[, -ncol(all_q)] + all_q[, -1]) / 2
+  pmax(rowSums(sweep(midpts, 2, widths, "*")), 0)
+}
 
 # ---------------------------
 # Single-panel ggplot helper
@@ -117,16 +130,14 @@ for (date in DATES) {
   van_pred <- read.csv(file.path(nndm_dir, "Vanilla", paste0(TARGET, "_predictions.csv")))
   van_q    <- read.csv(file.path(nndm_dir, "Vanilla", paste0(TARGET, "_predictions_quantiles.csv")))
   van_pts  <- coords %>%
-    mutate(pred_count = pmax(exp(van_pred[[paste0(TARGET,"_pred")]] +
-                                   0.5*sigma2_from_quantiles(van_q$q0.9, van_q$q0.1)) - 1, 0),
+    mutate(pred_count = mean_count_trapz(van_q),
            log1p_cnt = log1p(pred_count))
 
   # --- KpR ---
   kpr_pred <- read.csv(file.path(nndm_dir, "KpR", paste0(TARGET, "_predictions.csv")))
   kpr_q    <- read.csv(file.path(nndm_dir, "KpR", paste0(TARGET, "_predictions_quantiles.csv")))
   kpr_pts  <- coords %>%
-    mutate(pred_count = pmax(exp(kpr_pred[[paste0(TARGET,"_pred")]] +
-                                   0.5*sigma2_from_quantiles(kpr_q$q0.9, kpr_q$q0.1)) - 1, 0),
+    mutate(pred_count = mean_count_trapz(kpr_q),
            log1p_cnt = log1p(pred_count))
 
   # --- RK ---

@@ -46,19 +46,31 @@ make_sp <- function(date_str) {
 fit_vgm_grid <- function(formula, data,
                           models       = c("Sph", "Exp", "Ste"),
                           nugget_fracs = c(0, 0.1, 0.3, 0.6),
-                          range_fracs  = c(0.15, 0.4, 0.75)) {
+                          range_fracs  = c(0.15, 0.4, 0.75),
+                          kappa_values = c(1.0, 1.5, 2.0, 2.5)) {
+  # kappa_values apply to Ste only; kappa=0.5 is excluded (identical to Exp)
   empvar   <- variogram(formula, data)
   emp_sill <- max(empvar$gamma)
   max_dist <- max(empvar$dist)
   best_fit <- NULL
   best_err <- Inf
-  for (mdl in models) {
+  candidates <- do.call(rbind, lapply(models, function(mdl) {
+    if (mdl == "Ste") data.frame(mdl = mdl, kap = kappa_values, stringsAsFactors = FALSE)
+    else              data.frame(mdl = mdl, kap = NA_real_,     stringsAsFactors = FALSE)
+  }))
+  for (i in seq_len(nrow(candidates))) {
+    mdl <- candidates$mdl[i]
+    kap <- candidates$kap[i]
     for (nf in nugget_fracs) {
       for (rf in range_fracs) {
         nug  <- nf * emp_sill
         rng  <- rf * max_dist
-        init <- vgm(psill = max(emp_sill - nug, 1e-6), model = mdl,
-                    range = rng, nugget = nug)
+        init <- if (mdl == "Ste")
+          vgm(psill = max(emp_sill - nug, 1e-6), model = mdl,
+              range = rng, nugget = nug, kappa = kap)
+        else
+          vgm(psill = max(emp_sill - nug, 1e-6), model = mdl,
+              range = rng, nugget = nug)
         fit  <- tryCatch(fit.variogram(empvar, init), error = function(e) NULL)
         if (is.null(fit)) next
         err  <- tryCatch(attr(fit, "SSErr"), error = function(e) Inf)
@@ -200,21 +212,21 @@ fig_ok <- wrap_plots(Filter(Negate(is.null), panels_ok), ncol = 3) +
     title = "Fitted variograms — OK (ordinary kriging)",
     theme = theme(plot.title = element_text(size = 12, face = "bold"))
   )
-ggsave(file.path(OUTDIR, "Fig_S1_variogram_OK.png"),
+ggsave(file.path(OUTDIR, "Fig_S2_variogram_OK.png"),
        plot = fig_ok, width = 14, height = 14, dpi = 150)
-ggsave(file.path(OUTDIR, "Fig_S1_variogram_OK.tiff"),
+ggsave(file.path(OUTDIR, "Fig_S2_variogram_OK.tiff"),
        plot = fig_ok, width = 14, height = 14, dpi = 300, device = "tiff")
-cat("Saved Fig_S1_variogram_OK\n")
+cat("Saved Fig_S2_variogram_OK\n")
 
 fig_rk <- wrap_plots(Filter(Negate(is.null), panels_rk), ncol = 3) +
   plot_annotation(
     title = "Fitted variograms — TabICL-RK residuals",
     theme = theme(plot.title = element_text(size = 12, face = "bold"))
   )
-ggsave(file.path(OUTDIR, "Fig_S2_variogram_RK.png"),
+ggsave(file.path(OUTDIR, "Fig_S3_variogram_RK.png"),
        plot = fig_rk, width = 14, height = 14, dpi = 150)
-ggsave(file.path(OUTDIR, "Fig_S2_variogram_RK.tiff"),
+ggsave(file.path(OUTDIR, "Fig_S3_variogram_RK.tiff"),
        plot = fig_rk, width = 14, height = 14, dpi = 300, device = "tiff")
-cat("Saved Fig_S2_variogram_RK\n")
+cat("Saved Fig_S3_variogram_RK\n")
 
 cat("Done. Output in", OUTDIR, "\n")

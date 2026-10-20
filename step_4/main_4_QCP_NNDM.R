@@ -24,10 +24,7 @@ quantile_coverage_function <- function(test, quantile_predictions) {
     mean(test <= quantile_predictions[, j]) * 100
   })
   coverage.df <- as.data.frame(t(coverage))
-  MPIW <- mean(quantile_predictions$q0.9 - quantile_predictions$q0.1) +
-          mean(quantile_predictions$q0.8 - quantile_predictions$q0.2) +
-          mean(quantile_predictions$q0.7 - quantile_predictions$q0.3) +
-          mean(quantile_predictions$q0.6 - quantile_predictions$q0.4)
+  MPIW <- mean(quantile_predictions$q0.9 - quantile_predictions$q0.1)
   coverage_MPIW.df <- cbind(coverage.df, MPIW)
   colnames(coverage_MPIW.df) <- c(
     "QCP0.001","QCP0.1","QCP0.2","QCP0.3","QCP0.4",

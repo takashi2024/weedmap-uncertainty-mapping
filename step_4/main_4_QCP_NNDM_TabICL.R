@@ -26,10 +26,7 @@ quantile_coverage_function <- function(test, qdf) {
   coverage <- sapply(seq_along(QCP_COLS), function(j) {
     mean(test <= qdf[, j]) * 100
   })
-  MPIW <- mean(qdf$q0.9 - qdf$q0.1) +
-          mean(qdf$q0.8 - qdf$q0.2) +
-          mean(qdf$q0.7 - qdf$q0.3) +
-          mean(qdf$q0.6 - qdf$q0.4)
+  MPIW <- mean(qdf$q0.9 - qdf$q0.1)
   out <- as.data.frame(t(c(coverage, MPIW)))
   colnames(out) <- c(paste0("QCP", QCP_LEVELS), "MPIW")
   out

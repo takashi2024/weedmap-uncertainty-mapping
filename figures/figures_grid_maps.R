@@ -29,9 +29,22 @@ METHOD_ORDER <- c("Observed","OK","TabICL","TabICL-KpR","TabICL-RK")
 LO_VAL       <- log1p(0.5)
 THR_VAL      <- log1p(10)
 COLOUR_STOPS <- c("#2D0057","#C67BCA","#E8641A","#FDE725")
-NORM_PPF_09  <- qnorm(0.9)
+.TABICL_PROBS <- c(0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45,
+                   0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95)
+.TABICL_QCOLS <- sprintf("q%.2f", .TABICL_PROBS)  # matches predict_grid_tabicl.py format
 
-sigma2_from_quantiles <- function(q09, q01) ((q09 - q01) / (2 * NORM_PPF_09))^2
+mean_count_trapz <- function(q_df) {
+  q_log  <- as.matrix(q_df[, .TABICL_QCOLS])
+  q_cnt  <- pmax(exp(q_log) - 1, 0)
+  lower  <- matrix(0, nrow = nrow(q_df), ncol = 1)
+  q_upp  <- pmax(exp(q_df$q0.95 + (q_df$q0.95 - q_df$q0.90)) - 1, 0)
+  upper  <- matrix(q_upp, ncol = 1)
+  all_q  <- cbind(lower, q_cnt, upper)
+  all_p  <- c(0.0, .TABICL_PROBS, 1.0)
+  widths <- diff(all_p)
+  midpts <- (all_q[, -ncol(all_q)] + all_q[, -1]) / 2
+  pmax(rowSums(sweep(midpts, 2, widths, "*")), 0)
+}
 
 # Per-date colour scale helpers
 make_colour_params <- function(date_max_count) {
@@ -102,7 +115,7 @@ for (date in DATES) {
     van <- read.csv(van_path)
     van_pts <- van %>%
       mutate(x = x_25832 - X_MIN, y = y_25832 - Y_MIN,
-             pred_count = pmax(exp(pred + 0.5 * sigma2_from_quantiles(q0.9, q0.1)) - 1, 0),
+             pred_count = mean_count_trapz(van),
              method = "TabICL", date_label = label) %>%
       select(x, y, pred_count, method, date_label)
     parts <- c(parts, list(van_pts))
@@ -112,7 +125,7 @@ for (date in DATES) {
     kpr <- read.csv(kpr_path)
     kpr_pts <- kpr %>%
       mutate(x = x_25832 - X_MIN, y = y_25832 - Y_MIN,
-             pred_count = pmax(exp(pred + 0.5 * sigma2_from_quantiles(q0.9, q0.1)) - 1, 0),
+             pred_count = mean_count_trapz(kpr),
              method = "TabICL-KpR", date_label = label) %>%
       select(x, y, pred_count, method, date_label)
     parts <- c(parts, list(kpr_pts))
@@ -189,11 +202,6 @@ p_pred <- ggplot() +
     panel.spacing   = unit(0.3, "lines")
   )
 
-ggsave(file.path(OUTDIR, "pred_maps_all_dates.png"),
-       plot = p_pred, width = 14, height = 20, dpi = 150)
-ggsave(file.path(OUTDIR, "pred_maps_all_dates.tiff"),
-       plot = p_pred, width = 14, height = 20, dpi = 300, device = "tiff")
-cat("Saved pred_maps_all_dates\n")
 
 # =============================================================================
 # 2. UNCERTAINTY MAP — all dates combined (rows=dates, cols=methods, no Observed)
@@ -224,7 +232,7 @@ for (date in DATES) {
     van <- read.csv(van_path)
     parts$van <- van %>%
       mutate(x=x_25832-X_MIN, y=y_25832-Y_MIN,
-             iqr=q0.9-q0.1, method="TabICL", date_label=label) %>%
+             iqr=q0.90-q0.10, method="TabICL", date_label=label) %>%
       select(x, y, iqr, method, date_label)
   }
 
@@ -232,7 +240,7 @@ for (date in DATES) {
     kpr <- read.csv(kpr_path)
     parts$kpr <- kpr %>%
       mutate(x=x_25832-X_MIN, y=y_25832-Y_MIN,
-             iqr=q0.9-q0.1, method="TabICL-KpR", date_label=label) %>%
+             iqr=q0.90-q0.10, method="TabICL-KpR", date_label=label) %>%
       select(x, y, iqr, method, date_label)
   }
 
@@ -291,17 +299,6 @@ unc_late <- unc_combined %>%
   filter(date_label %in% DATE_LABELS[DATES_LATE]) %>%
   mutate(date_label = factor(date_label, levels = DATE_LABELS[DATES_LATE]))
 
-ggsave(file.path(OUTDIR, "unc_maps_dates1to4.png"),
-       plot = make_unc_plot(unc_early), width = 13, height = 9, dpi = 150)
-ggsave(file.path(OUTDIR, "unc_maps_dates1to4.tiff"),
-       plot = make_unc_plot(unc_early), width = 13, height = 9, dpi = 300, device = "tiff")
-cat("Saved unc_maps_dates1to4\n")
-
-ggsave(file.path(OUTDIR, "unc_maps_dates5to8.png"),
-       plot = make_unc_plot(unc_late), width = 13, height = 9, dpi = 150)
-ggsave(file.path(OUTDIR, "unc_maps_dates5to8.tiff"),
-       plot = make_unc_plot(unc_late), width = 13, height = 9, dpi = 300, device = "tiff")
-cat("Saved unc_maps_dates5to8\n")
 
 # Per-date single uncertainty maps
 make_unc_single <- function(data) {
@@ -336,7 +333,8 @@ for (date in DATES) {
     mutate(method = factor(method, levels = METHOD_ORDER[-1]))
   if (nrow(d_data) == 0) next
   p     <- make_unc_single(d_data)
-  fname <- paste0("unc_map_", date)
+  unc_prefix <- if (date %in% c("20250414","20250424","20250430","20250506")) "Fig_S13_" else "Fig_S14_"
+  fname <- paste0(unc_prefix, "unc_map_", date)
   ggsave(file.path(OUTDIR, paste0(fname, ".png")),
          plot = p, width = 13, height = 4, dpi = 150)
   ggsave(file.path(OUTDIR, paste0(fname, ".tiff")),
@@ -440,18 +438,20 @@ for (date in DATES) {
            log1p_cnt  = log1p(pred_count))
 
   van_path <- file.path(grd, "Vanilla_grid.csv")
-  van_pts  <- if (file.exists(van_path)) {
-    read.csv(van_path) %>%
+  van_df   <- if (file.exists(van_path)) read.csv(van_path) else NULL
+  van_pts  <- if (!is.null(van_df)) {
+    van_df %>%
       mutate(x = x_25832 - X_MIN, y = y_25832 - Y_MIN,
-             pred_count = pmax(exp(pred + 0.5 * sigma2_from_quantiles(q0.9, q0.1)) - 1, 0),
+             pred_count = mean_count_trapz(van_df),
              log1p_cnt  = log1p(pred_count))
   } else ok_pts  # fallback
 
   kpr_path <- file.path(grd, "KpR_grid.csv")
-  kpr_pts  <- if (file.exists(kpr_path)) {
-    read.csv(kpr_path) %>%
+  kpr_df   <- if (file.exists(kpr_path)) read.csv(kpr_path) else NULL
+  kpr_pts  <- if (!is.null(kpr_df)) {
+    kpr_df %>%
       mutate(x = x_25832 - X_MIN, y = y_25832 - Y_MIN,
-             pred_count = pmax(exp(pred + 0.5 * sigma2_from_quantiles(q0.9, q0.1)) - 1, 0),
+             pred_count = mean_count_trapz(kpr_df),
              log1p_cnt  = log1p(pred_count))
   } else ok_pts
 
@@ -491,12 +491,14 @@ for (date in DATES) {
     theme(legend.position = "right",
           plot.margin = unit(c(1, 2, 1, 2), "mm"))
 
-  fname <- paste0("pred_map_", date)
+  pred_num <- c("20250414"="S5","20250424"="S6","20250430"="S7","20250506"="S8",
+                "20250513"="S9","20250520"="S10","20250526"="S11","20250603"="S12")[date]
+  fname <- paste0("Fig_", pred_num, "_pred_map_", date)
   ggsave(file.path(OUTDIR, paste0(fname, ".png")),
          plot = combined, width = 13, height = 5.5, dpi = 150)
   ggsave(file.path(OUTDIR, paste0(fname, ".tiff")),
          plot = combined, width = 13, height = 5.5, dpi = 300, device = "tiff")
-  cat("  Saved pred_map_", date, "\n", sep = "")
+  cat("  Saved", fname, "\n")
 }
 
 cat("\nDone. Output in", OUTDIR, "\n")

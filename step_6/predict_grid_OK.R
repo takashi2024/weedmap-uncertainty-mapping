@@ -23,19 +23,31 @@ DATE_TAGS <- c(
 fit_vgm_grid <- function(formula, data,
                           models       = c("Sph", "Exp", "Ste"),
                           nugget_fracs = c(0, 0.1, 0.3, 0.6),
-                          range_fracs  = c(0.15, 0.4, 0.75)) {
+                          range_fracs  = c(0.15, 0.4, 0.75),
+                          kappa_values = c(1.0, 1.5, 2.0, 2.5)) {
+  # kappa_values apply to Ste only; kappa=0.5 is excluded (identical to Exp)
   empvar   <- variogram(formula, data)
   emp_sill <- max(empvar$gamma)
   max_dist <- max(empvar$dist)
   best_fit <- NULL
   best_err <- Inf
-  for (mdl in models) {
+  candidates <- do.call(rbind, lapply(models, function(mdl) {
+    if (mdl == "Ste") data.frame(mdl = mdl, kap = kappa_values, stringsAsFactors = FALSE)
+    else              data.frame(mdl = mdl, kap = NA_real_,     stringsAsFactors = FALSE)
+  }))
+  for (i in seq_len(nrow(candidates))) {
+    mdl <- candidates$mdl[i]
+    kap <- candidates$kap[i]
     for (nf in nugget_fracs) {
       for (rf in range_fracs) {
         nug  <- nf * emp_sill
         rng  <- rf * max_dist
-        init <- vgm(psill = max(emp_sill - nug, 1e-6), model = mdl,
-                    range = rng, nugget = nug)
+        init <- if (mdl == "Ste")
+          vgm(psill = max(emp_sill - nug, 1e-6), model = mdl,
+              range = rng, nugget = nug, kappa = kap)
+        else
+          vgm(psill = max(emp_sill - nug, 1e-6), model = mdl,
+              range = rng, nugget = nug)
         fit  <- tryCatch(fit.variogram(empvar, init), error = function(e) NULL)
         if (is.null(fit)) next
         err  <- tryCatch(attr(fit, "SSErr"), error = function(e) Inf)

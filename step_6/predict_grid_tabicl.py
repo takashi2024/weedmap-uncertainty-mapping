@@ -6,9 +6,9 @@ then predict at all 1m grid cells.
 Also saves in-sample predictions at training points (for RK residual kriging in predict_grid_RK.R).
 
 Outputs (per date under grid_predictions/{date}/):
-  Vanilla_grid.csv      — grid_id, x_25832, y_25832, pred, q0.1, q0.9
+  Vanilla_grid.csv      — grid_id, x_25832, y_25832, pred, q0.05, q0.10, ..., q0.95
   Vanilla_train.csv     — ROI_ID, x_25832, y_25832, y_true, pred_train  (for RK)
-  KpR_grid.csv          — grid_id, x_25832, y_25832, pred, q0.1, q0.9
+  KpR_grid.csv          — grid_id, x_25832, y_25832, pred, q0.05, q0.10, ..., q0.95
 
 RK is handled by predict_grid_RK.R (reads Vanilla_train.csv → kriging → RK_grid.csv).
 
@@ -44,7 +44,7 @@ DATE_TAGS = {
 TARGET = "log1p_Chenopodium_Count"
 N_ESTIMATORS = 4
 DEVICE = "cpu"
-QUANTILES = [0.1, 0.9]
+QUANTILES = [round(q * 0.05, 2) for q in range(1, 20)]  # 0.05, 0.10, ..., 0.95
 
 # =============================================================================
 # Column helpers
@@ -114,8 +114,7 @@ for date, tag in DATE_TAGS.items():
         "x_25832": grid_complete["x_25832"].values,
         "y_25832": grid_complete["y_25832"].values,
         "pred":    pred_grid,
-        "q0.1":    quant_grid[:, 0],
-        "q0.9":    quant_grid[:, 1],
+        **{f"q{q:.2f}": quant_grid[:, i] for i, q in enumerate(QUANTILES)},
     })
     van_grid_df.to_csv(os.path.join(out_dir, "Vanilla_grid.csv"), index=False)
     print(f"  Saved Vanilla_grid.csv  (pred: {pred_grid.min():.3f} – {pred_grid.max():.3f})")
@@ -165,8 +164,7 @@ for date, tag in DATE_TAGS.items():
             "x_25832": grid_complete["x_25832"].values,
             "y_25832": grid_complete["y_25832"].values,
             "pred":    pred_kpr,
-            "q0.1":    quant_kpr[:, 0],
-            "q0.9":    quant_kpr[:, 1],
+            **{f"q{q:.2f}": quant_kpr[:, i] for i, q in enumerate(QUANTILES)},
         })
         kpr_df.to_csv(os.path.join(out_dir, "KpR_grid.csv"), index=False)
         print(f"  Saved KpR_grid.csv  (pred: {pred_kpr.min():.3f} – {pred_kpr.max():.3f})")

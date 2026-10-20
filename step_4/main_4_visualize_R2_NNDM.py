@@ -113,7 +113,6 @@ for tgt in targets:
             linewidth=1.8, markersize=6,
         )
 
-    ax.axhline(0, color="grey", linewidth=0.8, linestyle="--")
     ax.set_xlabel("")
     ax.set_ylabel(r"$R^2$", fontsize=12)
     exact_dates = sorted(df_t["date_dt"].unique())

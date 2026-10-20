@@ -26,7 +26,7 @@ ALG_LEVELS <- c("OK", "TabICL", "TabICL-KpR", "TabICL-RK")
 TAU_LABEL_VALS <- c(0.1, 0.3, 0.5, 0.7, 0.9)
 
 DATE_LABELS <- c(
-  "20250414" = "14 Apr", "20250424" = "24 Apr", "20250430" = "30 Apr",
+  "20250424" = "24 Apr", "20250430" = "30 Apr",
   "20250506" = "06 May", "20250513" = "13 May",
   "20250520" = "20 May", "20250526" = "26 May",
   "20250603" = "02 Jun"
@@ -56,28 +56,12 @@ tau_pts <- dat %>%
          tau %in% TAU_LABEL_VALS)
 
 # ---------------------------
-# Per-date prevalence labels
-# ---------------------------
-prev_info <- dat %>%
-  group_by(date) %>%
-  slice(1) %>%
-  mutate(
-    n_total   = tp + fp + tn + fn,
-    n_inf     = tp + fn,
-    prev_label = sprintf("n = %d (%.1f%%)", n_inf, prevalence * 100)
-  ) %>%
-  select(date, prev_label) %>%
-  ungroup()
-
-# ---------------------------
 # One panel per date
 # ---------------------------
-make_pr_panel <- function(df_date, df_tau, date_lbl, show_x, show_y, prev_lbl) {
+make_pr_panel <- function(df_date, df_tau, date_lbl, show_x, show_y) {
   p <- ggplot(df_date, aes(x = recall, y = precision,
                             colour = algorithm, group = algorithm)) +
     geom_path(linewidth = 0.9) +
-    annotate("text", x = 1, y = 0.03, hjust = 1, vjust = 0,
-             label = prev_lbl, parse = FALSE, size = 4.5, colour = "grey30") +
     scale_colour_manual(values = ALG_COLORS, name = "Method") +
     scale_x_continuous(limits = c(0, 1), breaks = c(0, 0.5, 1),
                        labels = c("0", "0.5", "1")) +
@@ -114,18 +98,16 @@ for (i in seq_along(dates_ordered)) {
   df_tau <- tau_pts  %>% filter(date == d)
 
   if (nrow(df_d) == 0) next
-  prev_lbl <- prev_info$prev_label[prev_info$date == d]
-  if (length(prev_lbl) == 0) prev_lbl <- ""
-  panels[[d]] <- make_pr_panel(df_d, df_tau, lbl, show_x, show_y, prev_lbl)
+  panels[[d]] <- make_pr_panel(df_d, df_tau, lbl, show_x, show_y)
 }
 
-# 8 panels in 3×3 grid — one blank cell at position 9
-combined <- wrap_plots(c(panels, list(plot_spacer())), ncol = 3) +
+# 7 panels in 3-column grid — two blank cells at positions 8 and 9
+combined <- wrap_plots(c(panels, list(plot_spacer(), plot_spacer())), ncol = 3) +
   plot_layout(guides = "collect") &
   theme(legend.position = "bottom")
 
-ggsave(file.path(OUTDIR, "Fig_S14_PR_curve_by_date.png"),
+ggsave(file.path(OUTDIR, "Fig_S15_PR_curve_by_date.png"),
        plot = combined, width = 11, height = 11, dpi = 150)
-ggsave(file.path(OUTDIR, "Fig_S14_PR_curve_by_date.tiff"),
+ggsave(file.path(OUTDIR, "Fig_S15_PR_curve_by_date.tiff"),
        plot = combined, width = 11, height = 11, dpi = 300, device = "tiff")
 cat("Saved PR_curve_by_date\n")

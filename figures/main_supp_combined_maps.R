@@ -18,7 +18,6 @@ DATE_LABELS <- c(
 )
 
 METHOD_ORDER <- c("Observed", "OK", "TabICL", "TabICL-KpR", "TabICL-RK")
-NORM_PPF_09  <- qnorm(0.9)
 
 # --- Shared colour scale (identical to Fig 1) ---
 LO_VAL        <- log1p(0.5)
@@ -40,7 +39,22 @@ all_coords <- lapply(DATES, function(d) {
 X_MIN <- min(bind_rows(Filter(Negate(is.null), all_coords))$x_25832)
 Y_MIN <- min(bind_rows(Filter(Negate(is.null), all_coords))$y_25832)
 
-sigma2_from_quantiles <- function(q09, q01) ((q09 - q01) / (2 * NORM_PPF_09))^2
+.TABICL_PROBS <- c(0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45,
+                   0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95)
+.TABICL_QCOLS <- paste0("q", .TABICL_PROBS)
+
+mean_count_trapz <- function(q_df) {
+  q_log  <- as.matrix(q_df[, .TABICL_QCOLS])
+  q_cnt  <- pmax(exp(q_log) - 1, 0)
+  lower  <- matrix(0, nrow = nrow(q_df), ncol = 1)
+  q_upp  <- pmax(exp(q_df$q0.95 + (q_df$q0.95 - q_df$q0.9)) - 1, 0)
+  upper  <- matrix(q_upp, ncol = 1)
+  all_q  <- cbind(lower, q_cnt, upper)
+  all_p  <- c(0.0, .TABICL_PROBS, 1.0)
+  widths <- diff(all_p)
+  midpts <- (all_q[, -ncol(all_q)] + all_q[, -1]) / 2
+  pmax(rowSums(sweep(midpts, 2, widths, "*")), 0)
+}
 
 # ============================================================
 # 1. PREDICTION MAP — all dates combined
@@ -73,15 +87,13 @@ for (date in DATES) {
   van_pred <- read.csv(file.path(nndm_dir, "Vanilla", paste0(TARGET, "_predictions.csv")))
   van_q    <- read.csv(file.path(nndm_dir, "Vanilla", paste0(TARGET, "_predictions_quantiles.csv")))
   van_pts  <- coords %>%
-    mutate(pred_count = pmax(exp(van_pred[[paste0(TARGET,"_pred")]] +
-                                   0.5*sigma2_from_quantiles(van_q$q0.9, van_q$q0.1)) - 1, 0),
+    mutate(pred_count = mean_count_trapz(van_q),
            method = "TabICL")
 
   kpr_pred <- read.csv(file.path(nndm_dir, "KpR", paste0(TARGET, "_predictions.csv")))
   kpr_q    <- read.csv(file.path(nndm_dir, "KpR", paste0(TARGET, "_predictions_quantiles.csv")))
   kpr_pts  <- coords %>%
-    mutate(pred_count = pmax(exp(kpr_pred[[paste0(TARGET,"_pred")]] +
-                                   0.5*sigma2_from_quantiles(kpr_q$q0.9, kpr_q$q0.1)) - 1, 0),
+    mutate(pred_count = mean_count_trapz(kpr_q),
            method = "TabICL-KpR")
 
   rk_pts <- coords %>%
@@ -135,11 +147,6 @@ p_pred <- ggplot() +
     panel.spacing    = unit(0.3, "lines")
   )
 
-ggsave(file.path(OUTDIR, "pred_maps_all_dates.png"),
-       plot = p_pred, width = 14, height = 20, dpi = 150)
-ggsave(file.path(OUTDIR, "pred_maps_all_dates.tiff"),
-       plot = p_pred, width = 14, height = 20, dpi = 300, device = "tiff")
-cat("Saved pred_maps_all_dates\n")
 
 # ============================================================
 # 2. UNCERTAINTY MAP — all dates combined
@@ -225,17 +232,6 @@ unc_late <- unc_combined %>%
 p_unc_early <- make_unc_plot(unc_early)
 p_unc_late  <- make_unc_plot(unc_late)
 
-ggsave(file.path(OUTDIR, "unc_maps_dates1to4.png"),
-       plot = p_unc_early, width = 13, height = 9, dpi = 150)
-ggsave(file.path(OUTDIR, "unc_maps_dates1to4.tiff"),
-       plot = p_unc_early, width = 13, height = 9, dpi = 300, device = "tiff")
-cat("Saved unc_maps_dates1to4\n")
-
-ggsave(file.path(OUTDIR, "unc_maps_dates5to8.png"),
-       plot = p_unc_late, width = 13, height = 9, dpi = 150)
-ggsave(file.path(OUTDIR, "unc_maps_dates5to8.tiff"),
-       plot = p_unc_late, width = 13, height = 9, dpi = 300, device = "tiff")
-cat("Saved unc_maps_dates5to8\n")
 
 make_unc_plot_single <- function(data) {
   ggplot(data, aes(x = x, y = y, colour = iqr)) +
@@ -271,7 +267,8 @@ for (date in DATES) {
     mutate(method = factor(method, levels = METHOD_ORDER[-1]))
   if (nrow(d_data) == 0) next
   p <- make_unc_plot_single(d_data)
-  fname <- paste0("unc_map_", date)
+  unc_prefix <- if (date %in% c("20250414","20250424","20250430","20250506")) "Fig_S13_" else "Fig_S14_"
+  fname <- paste0(unc_prefix, "unc_map_", date)
   ggsave(file.path(OUTDIR, paste0(fname, ".png")),
          plot = p, width = 13, height = 4, dpi = 150)
   ggsave(file.path(OUTDIR, paste0(fname, ".tiff")),

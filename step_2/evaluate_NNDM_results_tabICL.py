@@ -106,21 +106,53 @@ for name, arr in [("Vanilla", van_pred), ("KpR", kpr_pred), ("RK", rk_pred)]:
 # stored in the ok_psi column of OK_predictions.csv.
 # Folds where psi could not be computed (NA) fall back to psi=0 (SK approx).
 #
-# sigma^2 source per model:
-#   OK      : ok_var  column in OK_predictions.csv  (kriging variance)
-#   RK      : var_ok  column in {target}_RK_predictions.csv
-#             (residual kriging variance; regression variance not propagated)
-#   KpR     : estimated from TabICL quantile output as
-#             sigma^2 = ((q0.9 - q0.1) / (2 * norm.ppf(0.9)))^2
-#   Vanilla : same as KpR
+# sigma^2 / back-transform source per model:
+#   OK      : lognormal mean exp(Y + sigma^2/2 - psi) - 1
+#             sigma^2 = ok_var (kriging variance), psi = Lagrange multiplier
+#   RK      : lognormal mean exp(Y + sigma^2/2) - 1
+#             sigma^2 = var_ok (residual kriging variance)
+#   Vanilla : trapezoidal integration of back-transformed quantiles over [0, 1]
+#   KpR     : same as Vanilla
 
-def sigma2_from_quantiles(q_df: pd.DataFrame) -> np.ndarray:
-    """Estimate conditional variance on log scale from Q10/Q90 quantiles."""
-    q10 = q_df["q0.1"].to_numpy()
-    q90 = q_df["q0.9"].to_numpy()
-    z90 = scipy_norm.ppf(0.9)   # ≈ 1.2816
-    sigma = (q90 - q10) / (2.0 * z90)
-    return np.maximum(sigma ** 2, 0.0)
+# Quantile columns and probability levels available from TabICL output
+_TABICL_Q_COLS = [
+    "q0.05","q0.1","q0.15","q0.2","q0.25","q0.3","q0.35","q0.4","q0.45",
+    "q0.5","q0.55","q0.6","q0.65","q0.7","q0.75","q0.8","q0.85","q0.9","q0.95"
+]
+_TABICL_PROBS = np.array([
+    0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45,
+    0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95
+])
+
+
+def mean_count_from_quantiles(q_df: pd.DataFrame) -> np.ndarray:
+    """
+    Estimate E[count] via trapezoidal integration of the quantile function
+    over the full [0, 1] probability range.
+
+    Central region [0.05, 0.95]: direct trapezoidal integration over the 19
+    available TabICL quantile levels.
+    Lower tail  [0, 0.05]: Q_count(p=0) = 0  (counts are non-negative).
+    Upper tail  [0.95, 1]: Q_log(p=1) linearly extrapolated from q0.90 and
+    q0.95 on the log scale, then back-transformed.
+    """
+    q_log   = q_df[_TABICL_Q_COLS].to_numpy()             # (N, 19), log1p scale
+    q_count = np.maximum(np.exp(q_log) - 1.0, 0.0)        # back-transform, clamp >= 0
+
+    # Lower boundary: counts are non-negative
+    lower = np.zeros((len(q_df), 1))
+
+    # Upper boundary: linear extrapolation on log scale from q0.90 -> q0.95
+    q_log_90 = q_df["q0.9"].to_numpy()
+    q_log_95 = q_df["q0.95"].to_numpy()
+    q_log_upper = q_log_95 + (q_log_95 - q_log_90)        # one step beyond q0.95
+    upper = np.maximum(np.exp(q_log_upper) - 1.0, 0.0).reshape(-1, 1)
+
+    # Full probability grid: [0, 0.05, 0.10, ..., 0.95, 1.0]  (21 points)
+    all_probs   = np.concatenate([[0.0], _TABICL_PROBS, [1.0]])
+    all_q_count = np.concatenate([lower, q_count, upper], axis=1)   # (N, 21)
+
+    return np.maximum(np.trapezoid(all_q_count, x=all_probs, axis=1), 0.0)
 
 
 def mean_back_transform(y_log: np.ndarray, sigma2: np.ndarray) -> np.ndarray:
@@ -131,8 +163,8 @@ def mean_back_transform(y_log: np.ndarray, sigma2: np.ndarray) -> np.ndarray:
 ok_mean_count  = np.maximum(
     np.exp(ok_pred + 0.5 * np.maximum(ok_var, 0.0) - ok_psi_safe) - 1.0, 0.0
 )
-van_mean_count = mean_back_transform(van_pred, sigma2_from_quantiles(van_q_df))
-kpr_mean_count = mean_back_transform(kpr_pred, sigma2_from_quantiles(kpr_q_df))
+van_mean_count = mean_count_from_quantiles(van_q_df)
+kpr_mean_count = mean_count_from_quantiles(kpr_q_df)
 rk_mean_count  = mean_back_transform(rk_pred,  np.maximum(var_ok,  0.0))
 
 # ---- Compute metrics --------------------------------------------------------

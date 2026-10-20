@@ -54,8 +54,8 @@ Spatial reference data for the 1m grid:
 | `grid_predictions/<date>/grid_features.csv` | Spectral/texture features extracted at all grid cells |
 | `grid_predictions/<date>/OK_grid.csv` | OK predictions at grid cells (log1p scale) |
 | `grid_predictions/<date>/OK_train_loo.csv` | LOO OK predictions at training locations (for KpR) |
-| `grid_predictions/<date>/Vanilla_grid.csv` | TabICL predictions + 80% PI at grid cells |
-| `grid_predictions/<date>/KpR_grid.csv` | TabICL-KpR predictions + 80% PI at grid cells |
+| `grid_predictions/<date>/Vanilla_grid.csv` | TabICL predictions + full quantile forecast (q0.05–q0.95) at grid cells |
+| `grid_predictions/<date>/KpR_grid.csv` | TabICL-KpR predictions + full quantile forecast (q0.05–q0.95) at grid cells |
 | `grid_predictions/<date>/RK_grid.csv` | TabICL-RK predictions at grid cells |
 
 > `field_1m_grid.gpkg` is built from `Field.gpkg` in the UAV analysis folder (outside this repository). Re-generate with `step_6/build_field_grid.py` if needed; the pre-built file is included so this step can be skipped.
@@ -89,16 +89,13 @@ WeedMap/
 │   └── main_prob_analysis_NNDM_visualization_v2.py
 ├── step_4/                              # Performance evaluation + QCP uncertainty analysis
 │   ├── main_4_visualize_R2_NNDM.py     # Fig. 2 — R² time series
-│   ├── main_4_visualize_MAE_RMSE_NNDM.py  # Fig. S3 — ME/RMSE time series
+│   ├── main_4_visualize_MAE_RMSE_NNDM.py  # Fig. S4 — ME/RMSE time series
 │   ├── main_4_boxplot_NNDM_R2.R        # R² boxplots (disabled in pipeline)
 │   ├── main_4_QCP_NNDM_TabICL.R        # Fig. 3 — QCP calibration plot
 │   ├── main_4_QCP_NNDM_sensitivity.R   # QCP sensitivity (log vs count scale)
-│   └── main_4_PR_curve_by_date.R       # Per-date precision-recall curves
-├── step_5/                              # LMM statistical inference
-│   ├── main_5_LMM_NNDM_R2.R
-│   ├── main_5_LMM_NNDM_recall_precision.R
-│   ├── main_5_LMM_NNDM_tau_recall_precision.R  # Fig. 4 — τ × recall/precision EMMs
-│   └── main_5_LMM_NNDM_tau_recall_precision_sprayedfrac.R
+│   └── main_4_PR_curve_by_date.R       # Fig. S15 — Per-date precision-recall curves
+├── step_5/                              # LMM statistical inference (Figure 4)
+│   └── main_5_LMM_NNDM_tau_recall_precision_sprayedfrac.R  # Fig. 4 — recall, precision + sprayed fraction vs τ
 ├── step_6/                              # Wall-to-wall 1m grid spatial predictions
 │   ├── build_field_grid.py              # Build grid GeoPackage from Field.gpkg boundary
 │   ├── extract_grid_features.py        # Extract spectral/texture features at grid cells
@@ -107,11 +104,13 @@ WeedMap/
 │   └── predict_grid_RK.R               # RK residual kriging at grid cells
 ├── figures/                             # Manuscript and supplementary figures
 │   ├── main_Fig1_spatial_distribution.R       # Fig. 1 — observation maps
-│   ├── main_supp_combined_maps.R              # Figs. S4–S11 — point prediction + uncertainty maps
-│   ├── main_supp_prediction_maps.R
-│   ├── main_supp_uncertainty_maps.R
-│   ├── figures_grid_maps.R                    # Figs. S4–S13 — 1m grid prediction + uncertainty maps
-│   └── main_supp_variogram_plots.R            # Figs. S1–S2 — variograms
+│   ├── main_supp_combined_maps.R              # Fig. S13–S14 — per-date uncertainty maps (NNDM LOO CV)
+│   ├── main_supp_prediction_maps.R            # Per-date NNDM LOO CV prediction maps
+│   ├── figures_grid_maps.R                    # Fig. S5–S14 — 1m grid prediction + uncertainty maps
+│   └── main_supp_variogram_plots.R            # Fig. S2–S3 — variograms (OK, RK residuals)
+├── archive/                             # Archived scripts no longer used in main pipeline
+│   ├── step_5/                          # Earlier LMM scripts (R² and recall/precision only)
+│   └── Results_TabICL/                  # Archived LMM outputs
 ├── run_pipeline_TabICL.sh                     # Full pipeline automation
 └── README.md
 ```
@@ -188,8 +187,7 @@ Rscript step_4/main_4_QCP_NNDM.R
 Rscript step_4/main_4_PR_curve_by_date.R
 
 # Phase 5 — LMM statistical analysis (step_5/)
-Rscript step_5/main_5_LMM_NNDM_R2.R
-Rscript step_5/main_5_LMM_NNDM_recall_precision.R
+Rscript step_5/main_5_LMM_NNDM_tau_recall_precision_sprayedfrac.R
 
 # Phase 6 — 1m grid spatial predictions (step_6/)
 # (skip build_field_grid.py if spatial/field_1m_grid.gpkg already exists)
@@ -229,8 +227,8 @@ grid_predictions/
     ├── grid_features.csv        # Spectral/texture features at all grid cells
     ├── OK_grid.csv              # OK predictions + kriging variance
     ├── OK_train_loo.csv         # LOO OK predictions at training locations
-    ├── Vanilla_grid.csv         # TabICL predictions + 80% PI
-    ├── KpR_grid.csv             # TabICL-KpR predictions + 80% PI
+    ├── Vanilla_grid.csv         # TabICL predictions + full quantile forecast (q0.05–q0.95)
+    ├── KpR_grid.csv             # TabICL-KpR predictions + full quantile forecast (q0.05–q0.95)
     └── RK_grid.csv              # TabICL-RK predictions
 ```
 
