@@ -5,5 +5,11 @@ __pycache__/
 .RData
 .Ruserdata
 Rplots.pdf
-Results_TabICL/
 Dataset_for_python/
+
+# Results: exclude large data outputs but keep figure PNGs and summary CSVs
+Results_TabICL/data_*/
+Results_TabICL/NNDM_prob/
+Results_TabICL/NNDM_LMM_outputs/
+Results_TabICL/pipeline_run.log
+Results_TabICL/**/*.tiff
