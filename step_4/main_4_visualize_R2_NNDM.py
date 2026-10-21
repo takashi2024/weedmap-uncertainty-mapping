@@ -126,7 +126,7 @@ for tgt in targets:
 
     fig_path = os.path.join(
         RESULTS_ROOT, "figures",
-        f"Figure2_NNDM_R2_timeseries_{tgt}_{METRIC}_{DATE_MIN}_20250602.png"
+        f"Figure4_NNDM_R2_timeseries_{tgt}_{METRIC}_{DATE_MIN}_20250602.png"
     )
     fig.savefig(fig_path, dpi=300, bbox_inches="tight")
     fig.savefig(fig_path.replace(".png", ".tiff"), dpi=300, bbox_inches="tight", format="tiff")

@@ -237,11 +237,11 @@ QCP_plot
 dir.create(file.path(ROOT, "figures"), showWarnings = FALSE, recursive = TRUE)
 
 ggsave(
-  file.path(ROOT, "figures", "Figure3_NNDM_QCP_plot.tiff"),
+  file.path(ROOT, "figures", "Figure5_NNDM_QCP_plot.tiff"),
   plot = QCP_plot, dpi = 300, width = 10, height = 7, units = "in", device = "tiff"
 )
 ggsave(
-  file.path(ROOT, "figures", "Figure3_NNDM_QCP_plot.png"),
+  file.path(ROOT, "figures", "Figure5_NNDM_QCP_plot.png"),
   plot = QCP_plot, dpi = 150, width = 10, height = 7, units = "in"
 )
 

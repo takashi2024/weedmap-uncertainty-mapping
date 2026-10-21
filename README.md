@@ -88,14 +88,14 @@ WeedMap/
 │   ├── main_prob_analysis_NNDM_taucurve.py
 │   └── main_prob_analysis_NNDM_visualization_v2.py
 ├── step_4/                              # Performance evaluation + QCP uncertainty analysis
-│   ├── main_4_visualize_R2_NNDM.py     # Fig. 2 — R² time series
+│   ├── main_4_visualize_R2_NNDM.py     # Fig. 4 — R² time series
 │   ├── main_4_visualize_MAE_RMSE_NNDM.py  # Fig. S3 — ME/RMSE time series
 │   ├── main_4_boxplot_NNDM_R2.R        # R² boxplots (disabled in pipeline)
-│   ├── main_4_QCP_NNDM_TabICL.R        # Fig. 3 — QCP calibration plot
+│   ├── main_4_QCP_NNDM_TabICL.R        # Fig. 5 — QCP calibration plot
 │   ├── main_4_QCP_NNDM_sensitivity.R   # QCP sensitivity (log vs count scale)
 │   └── main_4_PR_curve_by_date.R       # Fig. S14 — Per-date precision-recall curves
 ├── step_5/                              # LMM statistical inference (Figure 4)
-│   └── main_5_LMM_NNDM_tau_recall_precision_sprayedfrac.R  # Fig. 4 — recall, precision + sprayed fraction vs τ
+│   └── main_5_LMM_NNDM_tau_recall_precision_sprayedfrac.R  # Fig. 6 — recall, precision + sprayed fraction vs τ
 ├── step_6/                              # Wall-to-wall 1m grid spatial predictions
 │   ├── build_field_grid.py              # Build grid GeoPackage from Field.gpkg boundary
 │   ├── extract_grid_features.py        # Extract spectral/texture features at grid cells
@@ -110,9 +110,9 @@ WeedMap/
 ├── Results_TabICL/                      # Generated outputs (partially tracked — see note below)
 │   └── figures/                         # ★ Committed figure outputs (PNG only)
 │       ├── Figure1_spatial_distribution_Chenopodium.png       # Fig. 1
-│       ├── Figure2_NNDM_R2_timeseries_*.png                   # Fig. 2
-│       ├── Figure3_NNDM_QCP_plot.png                          # Fig. 3
-│       ├── Figure4_NNDM_emm_tau_combined_raw.png              # Fig. 4
+│       ├── Figure4_NNDM_R2_timeseries_*.png                   # Fig. 4
+│       ├── Figure5_NNDM_QCP_plot.png                          # Fig. 5
+│       ├── Figure6_NNDM_emm_tau_combined_raw.png              # Fig. 6
 │       └── supp/                        # Supplementary figures (Fig. S1–S14, PNG only)
 ├── archive/                             # Archived scripts no longer used in main pipeline
 │   ├── step_5/                          # Earlier LMM scripts (R² and recall/precision only)
