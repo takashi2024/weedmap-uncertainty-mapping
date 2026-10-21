@@ -212,21 +212,21 @@ fig_ok <- wrap_plots(Filter(Negate(is.null), panels_ok), ncol = 3) +
     title = "Fitted variograms — OK (ordinary kriging)",
     theme = theme(plot.title = element_text(size = 12, face = "bold"))
   )
-ggsave(file.path(OUTDIR, "Fig_S2_variogram_OK.png"),
+ggsave(file.path(OUTDIR, "Fig_S1_variogram_OK.png"),
        plot = fig_ok, width = 14, height = 14, dpi = 150)
-ggsave(file.path(OUTDIR, "Fig_S2_variogram_OK.tiff"),
+ggsave(file.path(OUTDIR, "Fig_S1_variogram_OK.tiff"),
        plot = fig_ok, width = 14, height = 14, dpi = 300, device = "tiff")
-cat("Saved Fig_S2_variogram_OK\n")
+cat("Saved Fig_S1_variogram_OK\n")
 
 fig_rk <- wrap_plots(Filter(Negate(is.null), panels_rk), ncol = 3) +
   plot_annotation(
     title = "Fitted variograms — TabICL-RK residuals",
     theme = theme(plot.title = element_text(size = 12, face = "bold"))
   )
-ggsave(file.path(OUTDIR, "Fig_S3_variogram_RK.png"),
+ggsave(file.path(OUTDIR, "Fig_S2_variogram_RK.png"),
        plot = fig_rk, width = 14, height = 14, dpi = 150)
-ggsave(file.path(OUTDIR, "Fig_S3_variogram_RK.tiff"),
+ggsave(file.path(OUTDIR, "Fig_S2_variogram_RK.tiff"),
        plot = fig_rk, width = 14, height = 14, dpi = 300, device = "tiff")
-cat("Saved Fig_S3_variogram_RK\n")
+cat("Saved Fig_S2_variogram_RK\n")
 
 cat("Done. Output in", OUTDIR, "\n")

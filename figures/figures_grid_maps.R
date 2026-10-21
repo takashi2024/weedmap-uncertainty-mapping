@@ -333,7 +333,7 @@ for (date in DATES) {
     mutate(method = factor(method, levels = METHOD_ORDER[-1]))
   if (nrow(d_data) == 0) next
   p     <- make_unc_single(d_data)
-  unc_prefix <- if (date %in% c("20250414","20250424","20250430","20250506")) "Fig_S13_" else "Fig_S14_"
+  unc_prefix <- if (date %in% c("20250414","20250424","20250430","20250506")) "Fig_S12_" else "Fig_S13_"
   fname <- paste0(unc_prefix, "unc_map_", date)
   ggsave(file.path(OUTDIR, paste0(fname, ".png")),
          plot = p, width = 13, height = 4, dpi = 150)
@@ -491,8 +491,8 @@ for (date in DATES) {
     theme(legend.position = "right",
           plot.margin = unit(c(1, 2, 1, 2), "mm"))
 
-  pred_num <- c("20250414"="S5","20250424"="S6","20250430"="S7","20250506"="S8",
-                "20250513"="S9","20250520"="S10","20250526"="S11","20250603"="S12")[date]
+  pred_num <- c("20250414"="S4","20250424"="S5","20250430"="S6","20250506"="S7",
+                "20250513"="S8","20250520"="S9","20250526"="S10","20250603"="S11")[date]
   fname <- paste0("Fig_", pred_num, "_pred_map_", date)
   ggsave(file.path(OUTDIR, paste0(fname, ".png")),
          plot = combined, width = 13, height = 5.5, dpi = 150)

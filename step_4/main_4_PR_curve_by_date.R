@@ -106,8 +106,8 @@ combined <- wrap_plots(c(panels, list(plot_spacer(), plot_spacer())), ncol = 3) 
   plot_layout(guides = "collect") &
   theme(legend.position = "bottom")
 
-ggsave(file.path(OUTDIR, "Fig_S15_PR_curve_by_date.png"),
+ggsave(file.path(OUTDIR, "Fig_S14_PR_curve_by_date.png"),
        plot = combined, width = 11, height = 11, dpi = 150)
-ggsave(file.path(OUTDIR, "Fig_S15_PR_curve_by_date.tiff"),
+ggsave(file.path(OUTDIR, "Fig_S14_PR_curve_by_date.tiff"),
        plot = combined, width = 11, height = 11, dpi = 300, device = "tiff")
 cat("Saved PR_curve_by_date\n")

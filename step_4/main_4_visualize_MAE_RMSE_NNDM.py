@@ -115,7 +115,7 @@ for tgt in targets:
     ax.legend(frameon=False)
     fig.tight_layout()
     for ext in (".png", ".tiff"):
-        fig.savefig(os.path.join(out_dir, f"Fig_S4_NNDM_ME_count_timeseries_{tgt}{ext}"),
+        fig.savefig(os.path.join(out_dir, f"Fig_S3_NNDM_ME_count_timeseries_{tgt}{ext}"),
                     dpi=300, bbox_inches="tight")
     plt.close(fig)
     print(f"Saved ME_count figure for {tgt}")
@@ -127,7 +127,7 @@ for tgt in targets:
     ax.legend(frameon=False)
     fig.tight_layout()
     for ext in (".png", ".tiff"):
-        fig.savefig(os.path.join(out_dir, f"Fig_S4_NNDM_RMSE_count_timeseries_{tgt}{ext}"),
+        fig.savefig(os.path.join(out_dir, f"Fig_S3_NNDM_RMSE_count_timeseries_{tgt}{ext}"),
                     dpi=300, bbox_inches="tight")
     plt.close(fig)
     print(f"Saved RMSE_count figure for {tgt}")
@@ -142,7 +142,7 @@ for tgt in targets:
     axes[1].set_xlabel("")
     fig.tight_layout()
     for ext in (".png", ".tiff"):
-        fig.savefig(os.path.join(out_dir, f"Fig_S4_NNDM_ME_RMSE_count_combined_{tgt}{ext}"),
+        fig.savefig(os.path.join(out_dir, f"Fig_S3_NNDM_ME_RMSE_count_combined_{tgt}{ext}"),
                     dpi=300, bbox_inches="tight")
     plt.close(fig)
     print(f"Saved combined ME+RMSE (count scale) figure for {tgt}")

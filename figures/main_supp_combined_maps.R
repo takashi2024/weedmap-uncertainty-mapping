@@ -267,7 +267,7 @@ for (date in DATES) {
     mutate(method = factor(method, levels = METHOD_ORDER[-1]))
   if (nrow(d_data) == 0) next
   p <- make_unc_plot_single(d_data)
-  unc_prefix <- if (date %in% c("20250414","20250424","20250430","20250506")) "Fig_S13_" else "Fig_S14_"
+  unc_prefix <- if (date %in% c("20250414","20250424","20250430","20250506")) "Fig_S12_" else "Fig_S13_"
   fname <- paste0(unc_prefix, "unc_map_", date)
   ggsave(file.path(OUTDIR, paste0(fname, ".png")),
          plot = p, width = 13, height = 4, dpi = 150)
